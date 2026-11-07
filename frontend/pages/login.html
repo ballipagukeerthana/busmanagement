@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Login | CampusGo</title>
+
+    <link rel="stylesheet" href="../css/register.css">
+
+</head>
+
+
+<body>
+
+
+    <div class="auth-wrapper">
+
+
+        <div class="auth-card">
+
+
+            <!-- =========================================
+                 CAMPUSGO BRAND
+            ========================================== -->
+
+             <div class="auth-brand">
+            <a href="../index.html" class="brand-link">
+                <img src="../assets/images/vemu-logo.jpg"
+                     alt="VEMU IT Logo" class="vemu-logo">
+                <div>
+                    <h2>VEMUIT-CampusGo</h2>
+                    <span>College Transportation Management</span>
+                </div>
+            </a>
+        </div>
+
+
+            <!-- =========================================
+                 LOGIN HEADER
+            ========================================== -->
+
+            <div class="auth-header">
+
+                <h1>
+                    Account Login
+                </h1>
+
+                <p>
+                    Select your user role and enter your
+                    registered credentials.
+                </p>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 ROLE SELECTOR
+            ========================================== -->
+
+            <div class="role-selector">
+
+
+                <!-- STUDENT -->
+
+                <button
+                    type="button"
+                    class="role-btn active"
+                    data-role="student"
+                    onclick="setRole('student', this)">
+
+                    <span class="role-icon">
+                        🎓
+                    </span>
+
+                    Student
+
+                </button>
+
+
+
+                <!-- ADMIN -->
+
+                <button
+                    type="button"
+                    class="role-btn"
+                    data-role="admin"
+                    onclick="setRole('admin', this)">
+
+                    <span class="role-icon">
+                        ⚙️
+                    </span>
+
+                    Admin
+
+                </button>
+
+
+
+                <!-- DRIVER -->
+
+                <button
+                    type="button"
+                    class="role-btn"
+                    data-role="driver"
+                    onclick="setRole('driver', this)">
+
+                    <span class="role-icon">
+                        👨‍✈️
+                    </span>
+
+                    Driver
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- =========================================
+                 LOGIN FORM
+            ========================================== -->
+
+            <form id="loginForm">
+
+
+                <!-- Hidden Role -->
+
+                <input
+                    type="hidden"
+                    id="roleInput"
+                    name="role"
+                    value="student">
+
+
+
+                <!-- =====================================
+                     USERNAME / EMAIL / ROLL NUMBER
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label
+                        for="username"
+                        id="usernameLabel">
+
+                        Email or Roll Number
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="username"
+                        class="form-control"
+                        placeholder="Enter your email or roll number"
+                        autocomplete="username"
+                        required
+                        autofocus>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     PASSWORD
+                ====================================== -->
+
+                <div class="form-group">
+
+
+                    <div class="password-header">
+
+
+                        <label for="password">
+
+                            Password
+
+                        </label>
+
+
+                        <a
+                            href="#"
+                            onclick="forgotPassword(event)">
+
+                            Forgot Password?
+
+                        </a>
+
+
+                    </div>
+
+
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-control"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     LOGIN ALERT
+                ====================================== -->
+
+                <div
+                    id="loginAlert"
+                    class="auth-alert"
+                    style="display: none;">
+
+                </div>
+
+
+
+                <!-- =====================================
+                     LOGIN BUTTON
+                ====================================== -->
+
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    class="login-btn">
+
+
+                    <span id="btnText">
+
+                        Sign In
+
+                    </span>
+
+
+                </button>
+
+
+            </form>
+
+
+
+            <!-- =========================================
+                 FOOTER
+            ========================================== -->
+<div class="auth-footer">
+
+    <p id="registerPrompt">
+        Don't have an account?
+        <a href="register.html" id="registerLink">
+            Register here
+        </a>
+    </p>
+
+    <p class="home-link">
+        <a href="../index.html">← Return to Homepage</a>
+    </p>
+
+</div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <script>
+
+
+        /* =========================================
+           ROLE SELECTION
+        ========================================== */
+
+        function setRole(role, btn) {
+
+
+            /* -----------------------------------------
+               Store selected role
+            ----------------------------------------- */
+
+            document
+                .getElementById("roleInput")
+                .value = role;
+
+
+
+            /* -----------------------------------------
+               Remove active class from all buttons
+            ----------------------------------------- */
+
+            document
+                .querySelectorAll(".role-btn")
+                .forEach(function (button) {
+
+                    button.classList.remove("active");
+
+                });
+
+
+
+            /* -----------------------------------------
+               Add active class
+            ----------------------------------------- */
+
+            if (btn) {
+
+                btn.classList.add("active");
+
+            }
+
+            else {
+
+                const targetButton =
+                    document.querySelector(
+                        `.role-btn[data-role="${role}"]`
+                    );
+
+
+                if (targetButton) {
+
+                    targetButton.classList.add("active");
+
+                }
+
+            }
+
+
+
+            /* -----------------------------------------
+               Username label
+            ----------------------------------------- */
+
+            const usernameLabel =
+                document.getElementById(
+                    "usernameLabel"
+                );
+
+
+            /* -----------------------------------------
+               Username input
+            ----------------------------------------- */
+
+            const usernameInput =
+                document.getElementById(
+                    "username"
+                );
+
+
+
+            /* -----------------------------------------
+               STUDENT
+            ----------------------------------------- */
+
+            if (role === "student") {
+
+
+                usernameLabel.textContent =
+                    "Email or Roll Number";
+
+
+                usernameInput.placeholder =
+                    "Enter your email or roll number";
+
+
+                usernameInput.value = "";
+
+
+            }
+
+
+
+            /* -----------------------------------------
+               ADMIN
+            ----------------------------------------- */
+
+            else if (role === "admin") {
+
+
+                usernameLabel.textContent =
+                    "Email";
+
+
+                usernameInput.placeholder =
+                    "Enter your admin email";
+
+
+                usernameInput.value = "";
+
+
+            }
+
+
+
+            /* -----------------------------------------
+               DRIVER
+            ----------------------------------------- */
+
+            else if (role === "driver") {
+
+
+                usernameLabel.textContent =
+                    "Email";
+
+
+                usernameInput.placeholder =
+                    "Enter your driver email";
+
+
+                usernameInput.value = "";
+
+
+            }
+
+// Show registration link only for students and drivers
+const registerPrompt = document.getElementById("registerPrompt");
+const registerLink = document.getElementById("registerLink");
+
+if (role === "admin") {
+    registerPrompt.style.display = "none";
+} else {
+    registerPrompt.style.display = "block";
+
+    registerLink.href =
+        "register.html?role=" + encodeURIComponent(role);
+
+    registerLink.textContent =
+        role === "student"
+            ? "Register as Student"
+            : "Register as Driver";
+}
+            /* Clear old alert */
+
+            clearLoginAlert();
+
+        }
+
+
+
+        /* =========================================
+           FORGOT PASSWORD
+        ========================================== */
+
+        function forgotPassword(event) {
+
+
+            event.preventDefault();
+
+
+            alert(
+                "Please contact the transportation administrator to reset your password."
+            );
+
+        }
+
+
+
+        /* =========================================
+           SHOW LOGIN ALERT
+        ========================================== */
+
+        function showLoginAlert(message, type) {
+
+
+            const alertBox =
+                document.getElementById(
+                    "loginAlert"
+                );
+
+
+            alertBox.textContent =
+                message;
+
+
+            alertBox.className =
+                "auth-alert " + type;
+
+
+            alertBox.style.display =
+                "block";
+
+        }
+
+
+
+        /* =========================================
+           CLEAR LOGIN ALERT
+        ========================================== */
+
+        function clearLoginAlert() {
+
+
+            const alertBox =
+                document.getElementById(
+                    "loginAlert"
+                );
+
+
+            alertBox.textContent =
+                "";
+
+
+            alertBox.className =
+                "auth-alert";
+
+
+            alertBox.style.display =
+                "none";
+
+        }
+
+
+
+        /* =========================================
+           LOGIN FORM
+        ========================================== */
+
+        document
+            .getElementById("loginForm")
+            .addEventListener(
+                "submit",
+                async function (event) {
+
+
+                    event.preventDefault();
+
+
+
+                    /* ---------------------------------
+                       Get elements
+                    --------------------------------- */
+
+                    const submitBtn =
+                        document.getElementById(
+                            "submitBtn"
+                        );
+
+
+                    const btnText =
+                        document.getElementById(
+                            "btnText"
+                        );
+
+
+                    const usernameInput =
+                        document.getElementById(
+                            "username"
+                        );
+
+
+                    const passwordInput =
+                        document.getElementById(
+                            "password"
+                        );
+
+
+                    const roleInput =
+                        document.getElementById(
+                            "roleInput"
+                        );
+
+
+
+                    /* ---------------------------------
+                       Clear previous alert
+                    --------------------------------- */
+
+                    clearLoginAlert();
+
+
+
+                    /* ---------------------------------
+                       Get values
+                    --------------------------------- */
+
+                    const username =
+                        usernameInput
+                            .value
+                            .trim();
+
+
+                    const password =
+                        passwordInput
+                            .value;
+
+
+                    const role =
+                        roleInput
+                            .value;
+
+
+
+                    /* ---------------------------------
+                       Basic validation
+                    --------------------------------- */
+
+                    if (!username || !password) {
+
+
+                        showLoginAlert(
+                            "Please enter your login details.",
+                            "error"
+                        );
+
+
+                        return;
+
+                    }
+
+
+
+                    /* ---------------------------------
+                       Disable login button
+                    --------------------------------- */
+
+                    submitBtn.disabled =
+                        true;
+
+
+                    btnText.textContent =
+                        "Checking Login...";
+
+
+
+                    /* ---------------------------------
+                       Login data
+                    --------------------------------- */
+
+                    const loginData = {
+    identifier: username,
+    password: password,
+    role: role
+};
+
+                    try {
+
+
+                        /* =================================
+                           SEND LOGIN REQUEST TO BACKEND
+                        ================================== */
+
+                        const response =
+                            await fetch(
+                                "http://localhost:5000/api/auth/login",
+                                {
+
+                                    method:
+                                        "POST",
+
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+
+                                    body:
+                                        JSON.stringify(
+                                            loginData
+                                        )
+
+                                }
+                            );
+
+
+
+                        /* ---------------------------------
+                           Convert response to JSON
+                        --------------------------------- */
+
+                        const data =
+                            await response.json();
+
+
+
+                        /* ---------------------------------
+                           Check login failure
+                        --------------------------------- */
+
+                        if (!response.ok) {
+
+
+                            showLoginAlert(
+                                data.message ||
+                                "Invalid login credentials.",
+                                "error"
+                            );
+
+
+                            submitBtn.disabled =
+                                false;
+
+
+                            btnText.textContent =
+                                "Sign In";
+
+
+                            return;
+
+                        }
+
+
+
+                        /* =================================
+                           LOGIN SUCCESS
+                        ================================== */
+
+                        showLoginAlert(
+                            "Login successful! Redirecting...",
+                            "success"
+                        );
+
+
+
+                        /* =================================
+                           SAVE USER INFORMATION
+                        ================================== */
+
+                        localStorage.setItem(
+                            "campusgoUser",
+                            JSON.stringify(
+                                data.user
+                            )
+                        );
+
+                        localStorage.setItem(
+                            "campusgoRole",
+                            data.user.role
+                        );
+
+                        if (data.token) {
+                            localStorage.setItem(
+                                "campusgoToken",
+                                data.token
+                            );
+                        }
+
+
+
+                        /* =================================
+                           REDIRECT BASED ON ROLE
+                        ================================== */
+
+                    setTimeout(function () {
+    const userRole = data.user.role;
+
+    if (userRole === "student") {
+        window.location.href = "student-dashboard.html";
+    } else if (userRole === "admin") {
+        window.location.href = "admin-dashboard.html";
+    } else if (userRole === "driver") {
+        window.location.href = "driver-dashboard.html";
+    } else {
+        showLoginAlert("Invalid user role received.", "error");
+    }
+}, 1000);
+
+                    }
+
+
+                    /* =================================
+                       CONNECTION / OTHER ERROR
+                    ================================== */
+
+                    catch (error) {
+
+
+                        console.error(
+                            "Login error:",
+                            error
+                        );
+
+
+                        showLoginAlert(
+                            "Unable to connect to the server. Make sure the backend is running.",
+                            "error"
+                        );
+
+
+                        submitBtn.disabled =
+                            false;
+
+
+                        btnText.textContent =
+                            "Sign In";
+
+                    }
+
+
+                }
+            );
+
+
+
+        /* =========================================
+           CHECK ROLE FROM REGISTRATION REDIRECT
+        ========================================== */
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const registeredRole =
+            urlParams.get("role");
+
+
+        if (
+            registeredRole === "student" ||
+            registeredRole === "admin" ||
+            registeredRole === "driver"
+        ) {
+
+
+            setRole(
+                registeredRole,
+                null
+            );
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>

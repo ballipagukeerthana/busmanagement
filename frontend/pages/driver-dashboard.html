@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard | CampusGo - VEMU IT</title>
+    <meta name="description" content="CampusGo Driver Dashboard for VEMU Institute of Technology. Manage assigned bus, students, diesel records, and live GPS trip tracking.">
+
+    <!-- Google Fonts & Stylesheets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="../css/driver-dashboard.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- =========================================================
+         SIDEBAR NAVIGATION
+    ========================================================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/vemu-logo.jpg" alt="VEMU IT Logo" class="brand-logo-img">
+            <div class="brand-text">
+                <h2>VEMUIT-CampusGo</h2>
+                <span>Driver Portal</span>
+            </div>
+        </div>
+
+        <!-- Driver Quick Profile Badge in Sidebar -->
+        <div class="driver-badge-sidebar" id="sidebarDriverBadge">
+            <div class="driver-avatar-circle" id="sidebarAvatar">👨‍✈️</div>
+            <div class="driver-badge-info">
+                <h4 id="sidebarDriverName">Loading...</h4>
+                <p id="sidebarAssignedBus">Fetching Bus...</p>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <nav class="sidebar-nav">
+            <a class="nav-link active" data-view="dashboard" id="navDashboard">
+                <span class="nav-icon">📊</span> Overview
+            </a>
+            <a class="nav-link" data-view="profile" id="navProfile">
+                <span class="nav-icon">👤</span> My Profile
+            </a>
+            <a class="nav-link" data-view="bus" id="navBus">
+                <span class="nav-icon">🚌</span> My Assigned Bus
+            </a>
+            <a class="nav-link" data-view="students" id="navStudents">
+                <span class="nav-icon">👥</span> My Students
+            </a>
+            <a class="nav-link" data-view="fees" id="navFees">
+                <span class="nav-icon">💳</span> Fee Status
+            </a>
+            <a class="nav-link" data-view="diesel" id="navDiesel">
+                <span class="nav-icon">⛽</span> Diesel Records
+            </a>
+            <a class="nav-link" data-view="route" id="navRoute">
+                <span class="nav-icon">🗺️</span> Route & Stops
+            </a>
+            <a class="nav-link" data-view="tracking" id="navTracking">
+                <span class="nav-icon">📍</span> Live Tracking
+            </a>
+            <a class="nav-link" data-view="trips" id="navTrips">
+                <span class="nav-icon">🚦</span> Trip Controls
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="btn-logout" id="logoutBtn">
+                <span>🚪</span> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- =========================================================
+         MAIN APPLICATION AREA
+    ========================================================== -->
+    <main class="main-content">
+
+        <!-- Top Navigation Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button type="button" class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Toggle Navigation">
+                    ☰
+                </button>
+                <div class="page-title-box">
+                    <h1 id="topbarTitle">Dashboard Overview</h1>
+                    <span id="topbarSubtitle">VEMU IT College Bus Transit Management</span>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Notifications Bell Dropdown -->
+                <div class="notif-wrapper" style="position: relative;">
+                    <button type="button" class="notif-bell-btn" id="btnDriverNotifs" title="Notifications" aria-label="Notifications">
+                        <span>🔔</span>
+                        <span class="notif-count-badge" id="driverNotifBadge" style="display:none;">0</span>
+                    </button>
+                    <div class="notif-dropdown" id="driverNotifDropdown" style="display:none;">
+                        <div class="notif-dropdown-header">
+                            <h4>Notifications</h4>
+                            <button type="button" class="btn-text-sm" id="btnDriverMarkAllRead">Mark all read</button>
+                        </div>
+                        <div class="notif-dropdown-list" id="driverNotifList">
+                            <p class="notif-empty" style="padding:16px; text-align:center; color:var(--text-muted); font-size:13px; margin:0;">No notifications yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Driver Profile Chip in Navigation -->
+                <div class="topbar-profile" id="topbarProfileChip" onclick="switchView('profile')" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:5px 12px; background:var(--white); border:1px solid var(--border-color); border-radius:20px;" title="View Profile">
+                    <div class="driver-avatar-circle" id="topbarAvatar" style="width:26px; height:26px; font-size:11px; font-weight:800; background:var(--royal-blue); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">V</div>
+                    <span id="topbarDriverName" style="font-size:13px; font-weight:700; color:var(--deep-navy);">vijay kumar</span>
+                </div>
+
+                <!-- Active Trip Indicator -->
+                <div class="trip-indicator-pill idle" id="topbarTripIndicator">
+                    <span class="pulsing-dot"></span>
+                    <span id="topbarTripText">Trip</span>
+                </div>
+
+                <!-- Socket Connection Dot -->
+                <div class="socket-status-badge" title="Live Synchronization Status">
+                    <span class="status-dot" id="socketDot"></span>
+                    <span id="socketText">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body / Dynamic Views -->
+        <div class="content-body">
+
+            <!-- Global Alert Container (for Unassigned Bus or Account Notice) -->
+            <div id="globalAlertContainer"></div>
+
+            <!-- =====================================================
+                 1. SECTION: DASHBOARD OVERVIEW
+            ====================================================== -->
+            <section class="view-section active" id="view-dashboard">
+                
+                <!-- Hero Trip Control Banner -->
+                <div class="hero-trip-panel">
+                    <div class="hero-trip-left">
+                        <h2 id="overviewWelcomeTitle">Welcome, Driver 👋</h2>
+                        <p id="overviewTripSummary">Check your assigned bus, student roster, route stops, and start your transit trip.</p>
+                    </div>
+                    <div class="hero-trip-controls">
+                        <button type="button" class="btn btn-success btn-lg" id="btnHeroStartTrip">
+                            <span>▶️</span> Start Trip
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg" id="btnHeroEndTrip" style="display: none;">
+                            <span>⏹️</span> End Trip
+                        </button>
+                        <button type="button" class="btn btn-outline" id="btnQuickRecordDiesel">
+                            <span>⛽</span> Log Diesel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stat Cards Grid -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap">🚌</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Assigned Bus</div>
+                            <div class="stat-value" id="cardBusNumber">—</div>
+                            <div class="stat-subtext" id="cardBusCapacity">Capacity: —</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap green">🗺️</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Assigned Route</div>
+                            <div class="stat-value" id="cardRouteName" style="font-size: 1.25rem;">—</div>
+                            <div class="stat-subtext" id="cardRouteStops">Stops: —</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap amber">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Assigned Students</div>
+                            <div class="stat-value" id="cardTotalStudents">0</div>
+                            <div class="stat-subtext" id="cardPaidBreakdown">Paid: 0 | Unpaid: 0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap red">🚦</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Trip Status</div>
+                            <div class="stat-value" id="cardTripStatus"></div>
+                            <div class="stat-subtext" id="cardTripTimer">Standby</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Overview Two-Column Layout -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+                    <!-- Next Scheduled Stops Preview -->
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <div class="panel-title"><span>📍</span> Route Stops Overview</div>
+                            <button type="button" class="btn btn-outline" onclick="switchView('route')">View All Stops →</button>
+                        </div>
+                        <div id="overviewStopsList" style="display: flex; flex-direction: column; gap: 10px;">
+                            <p style="color: var(--text-muted);">Loading route stops...</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Students Preview -->
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <div class="panel-title"><span>👥</span> Students on this Bus</div>
+                            <button type="button" class="btn btn-outline" onclick="switchView('students')">View All Students →</button>
+                        </div>
+                        <div id="overviewStudentsList" style="display: flex; flex-direction: column; gap: 10px;">
+                            <p style="color: var(--text-muted);">Loading students...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- =====================================================
+                 2. SECTION: MY PROFILE
+            ====================================================== -->
+            <section class="view-section" id="view-profile">
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>👤</span> Driver Profile Details</div>
+                        <span class="badge badge-success" id="profBadgeStatus">Approved & Active</span>
+                    </div>
+
+                    <div class="profile-grid">
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Driver ID</div>
+                            <div class="profile-field-val" id="profDriverId">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Full Name</div>
+                            <div class="profile-field-val" id="profName">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Phone Number</div>
+                            <div class="profile-field-val" id="profPhone">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Email Address</div>
+                            <div class="profile-field-val" id="profEmail">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Driving Licence Number</div>
+                            <div class="profile-field-val" id="profLicense">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Experience</div>
+                            <div class="profile-field-val" id="profExperience">— Years</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Registration / Approval Date</div>
+                            <div class="profile-field-val" id="profRegDate">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Assigned Bus</div>
+                            <div class="profile-field-val" id="profBus">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Assigned Route</div>
+                            <div class="profile-field-val" id="profRoute">—</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 3. SECTION: MY ASSIGNED BUS
+            ====================================================== -->
+            <section class="view-section" id="view-bus">
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>🚌</span> Assigned Bus Specifications</div>
+                        <span class="badge badge-info" id="busConditionBadge">Working</span>
+                    </div>
+
+                    <div id="busNotAssignedNotice" style="display: none;" class="alert-banner warning">
+                        <span>⚠️</span> No bus has been assigned to you yet. Please contact the Transportation Admin.
+                    </div>
+
+                    <div id="busDetailsContainer" class="profile-grid">
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Bus ID</div>
+                            <div class="profile-field-val" id="busDetailId">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Bus Number</div>
+                            <div class="profile-field-val" id="busDetailNumber">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Bus Name / Model</div>
+                            <div class="profile-field-val" id="busDetailName">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Seating Capacity</div>
+                            <div class="profile-field-val" id="busDetailCapacity">— Seats</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Assigned Route</div>
+                            <div class="profile-field-val" id="busDetailRoute">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Current Bus Status</div>
+                            <div class="profile-field-val" id="busDetailStatus">—</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Current Trip Status</div>
+                            <div class="profile-field-val" id="busDetailTripStatus">Idle</div>
+                        </div>
+
+                        <div class="profile-field-box">
+                            <div class="profile-field-label">Assigned Driver</div>
+                            <div class="profile-field-val" id="busDetailDriver">—</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 4. SECTION: MY STUDENTS
+            ====================================================== -->
+            <section class="view-section" id="view-students">
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span>👥</span> Students Assigned to this Bus
+                            <span class="badge badge-info" id="studentsCountBadge">0 Students</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="studentSearchInput" placeholder="Search by student name, roll number, or stop...">
+                        </div>
+                        <select class="filter-select" id="studentStopFilter">
+                            <option value="">All Stops</option>
+                        </select>
+                        <select class="filter-select" id="studentFeeFilter">
+                            <option value="">All Payment Statuses</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Partially Paid">Partially Paid</option>
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Pending Verification">Pending Verification</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Student Name</th>
+                                    <th>Branch & Year</th>
+                                    <th>Boarding Stop</th>
+                                    <th>Distance</th>
+                                    <th>Fee Status</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading students list...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 5. SECTION: FEE PAYMENT STATUS
+            ====================================================== -->
+            <section class="view-section" id="view-fees">
+                <!-- Fee Summary Cards -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Assigned</div>
+                            <div class="stat-value" id="feeTotalStudents">0</div>
+                            <div class="stat-subtext">Students on bus</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap green">✓</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Fully Paid</div>
+                            <div class="stat-value" id="feePaidStudents">0</div>
+                            <div class="stat-subtext">Verified 100%</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap amber">⏳</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Partially Paid</div>
+                            <div class="stat-value" id="feePartialStudents">0</div>
+                            <div class="stat-subtext">Partial balance</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap red">✕</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Unpaid</div>
+                            <div class="stat-value" id="feeUnpaidStudents">0</div>
+                            <div class="stat-subtext">No verified payment</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-banner info">
+                    <span>ℹ️</span> <strong>Read-Only Access:</strong> Transportation fee verification and approvals are securely governed by College Administration.
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>💳</span> Student Fee Breakdown</div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Student Name</th>
+                                    <th>Assigned Stop</th>
+                                    <th>Required Fee</th>
+                                    <th>Verified Paid</th>
+                                    <th>Balance Due</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feesTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading fee records...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 6. SECTION: DIESEL RECORDS
+            ====================================================== -->
+            <section class="view-section" id="view-diesel">
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>⛽</span> Bus Diesel Refuel Log</div>
+                        <button type="button" class="btn btn-primary" id="btnOpenDieselModal">
+                            <span>➕</span> Record New Diesel Entry
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Bus Number</th>
+                                    <th>Quantity (Litres)</th>
+                                    <th>Approx Cost (₹)</th>
+                                    <th>Recorded By</th>
+                                    <th>Notes / Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dieselTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading diesel records...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 7. SECTION: ROUTE AND STOPS
+            ====================================================== -->
+            <section class="view-section" id="view-route">
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span>🗺️</span> Assigned Route & Ordered Stops
+                            <span class="badge badge-info" id="routeStopsCountBadge">0 Stops</span>
+                        </div>
+                        <div id="routeEndpointsBadge" style="font-size: 0.9rem; color: var(--cyan); font-weight: 600;">—</div>
+                    </div>
+
+                    <div class="timeline-list" id="routeTimelineContainer">
+                        <p style="color: var(--text-muted);">Loading route stops...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 8. SECTION: LIVE TRACKING
+            ====================================================== -->
+            <section class="view-section" id="view-tracking">
+                <div class="card-panel" style="padding: 16px;">
+                    <div class="panel-header" style="margin-bottom: 12px;">
+                        <div class="panel-title"><span>📍</span> Live Bus GPS Navigation</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="badge badge-neutral" id="trackingGpsStatus">GPS Standby</span>
+                            <button type="button" class="btn btn-outline" id="btnCenterMap">
+                                <span>🎯</span> Center Map
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="map-wrapper">
+                        <div id="driverLiveMap"></div>
+
+                        <!-- Live GPS Telemetry Overlay -->
+                        <div class="gps-metrics-overlay">
+                            <div class="metric-item">
+                                <span class="metric-label">Latitude</span>
+                                <span class="metric-value" id="gpsMetricLat">—</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Longitude</span>
+                                <span class="metric-value" id="gpsMetricLng">—</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Speed</span>
+                                <span class="metric-value" id="gpsMetricSpeed">0.0 km/h</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Accuracy</span>
+                                <span class="metric-value" id="gpsMetricAccuracy">± — m</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Last Ping</span>
+                                <span class="metric-value" id="gpsMetricTime" style="color: #ffffff;">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 9. SECTION: TRIP MANAGEMENT & STOP PROGRESS
+            ====================================================== -->
+            <section class="view-section" id="view-trips">
+                <div class="hero-trip-panel">
+                    <div class="hero-trip-left">
+                        <h2 id="tripControlHeaderTitle">Trip Control & Progress Tracking</h2>
+                        <p id="tripControlHeaderDesc">Start transit trip to initiate real-time GPS broadcast and update stop milestones.</p>
+                    </div>
+                    <div class="hero-trip-controls">
+                        <button type="button" class="btn btn-success btn-lg" id="btnTripsStart">
+                            <span>▶️</span> Start Transit Trip
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg" id="btnTripsEnd" style="display: none;">
+                            <span>⏹️</span> Complete & End Trip
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>🚦</span> Active Trip Stop Progress</div>
+                        <span class="badge badge-neutral" id="tripProgressStatusBadge">Trip Not Started</span>
+                    </div>
+
+                    <div class="alert-banner info" style="margin-bottom: 20px;">
+                        <span>💡</span> <strong>Automatic & Manual Progress:</strong> As you drive, stops within 250 meters will automatically mark as reached, or you can manually click "Mark Reached / Completed" below.
+                    </div>
+
+                    <div class="timeline-list" id="tripStopProgressTimeline">
+                        <p style="color: var(--text-muted);">Start a trip to begin stop milestone tracking.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+<!-- =========================================================
+     MODAL: LOG DIESEL ENTRY
+========================================================== -->
+<div class="modal-overlay" id="dieselModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title">⛽ Record Diesel Refuel</h3>
+            <button type="button" class="btn-close-modal" id="btnCloseDieselModal">✕</button>
+        </div>
+        <form id="dieselForm">
+            <div class="form-group">
+                <label class="form-label" for="dieselBusNumber">Assigned Bus</label>
+                <input type="text" class="form-input" id="dieselBusNumber" readonly style="opacity: 0.8; cursor: not-allowed;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="dieselLitres">Diesel Quantity in Litres <span style="color: var(--danger);">*</span></label>
+                <input type="number" step="0.1" min="0.5" class="form-input" id="dieselLitres" placeholder="e.g. 45.5" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="dieselCost">Approx Total Cost (₹)</label>
+                <input type="number" step="0.5" min="0" class="form-input" id="dieselCost" placeholder="e.g. 4500 (optional)">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="dieselNotes">Odometer / Notes</label>
+                <textarea rows="2" class="form-textarea" id="dieselNotes" placeholder="e.g. Odometer: 42,500 km at Indian Oil bunk"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="btnCancelDiesel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveDiesel">Save Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- External Libraries & Dashboard Scripts -->
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/driver-dashboard.js"></script>
+
+</body>
+</html>

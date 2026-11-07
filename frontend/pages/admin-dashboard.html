@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusGo | Admin Dashboard — VEMU IT</title>
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/admin-dashboard.css">
+
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Leaflet Map CSS for Live Bus Tracking -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- ==============================================
+         SIDEBAR NAVIGATION (Sections 1 to 12)
+    =============================================== -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                <a href="../index.html" class="brand-link">
+                    <img src="../assets/images/vemu-logo.jpg" alt="VEMU IT Logo" class="vemu-logo">
+                    <div class="brand-text">
+                        <h2>VEMUIT-CampusGo</h2>
+                        <span>Transportation Management</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="menu-heading">MAIN MENU</div>
+
+            <nav class="navigation" id="mainNav">
+                <a href="#dashboard" class="nav-link active" data-view="dashboard">
+                    <span>▦</span> Dashboard
+                </a>
+                <a href="#requests" class="nav-link" data-view="requests">
+                    <span>✉</span> Driver Requests <span class="nav-badge" id="navRequests" hidden>0</span>
+                </a>
+                <a href="#students" class="nav-link" data-view="students">
+                    <span>🎓</span> Students
+                </a>
+                <a href="#drivers" class="nav-link" data-view="drivers">
+                    <span>♧</span> Drivers
+                </a>
+                <a href="#buses" class="nav-link" data-view="buses">
+                    <span>▰</span> Buses
+                </a>
+                <a href="#routes" class="nav-link" data-view="routes">
+                    <span>⌖</span> Routes &amp; Stops
+                </a>
+
+                <div class="menu-heading second-heading">FINANCE &amp; PASSES</div>
+
+                <a href="#fee-assignments" class="nav-link" data-view="fee-assignments">
+                    <span>₹</span> Fee Assignments
+                </a>
+                <a href="#payments" class="nav-link" data-view="payments">
+                    <span>💳</span> Payments <span class="nav-badge" id="navPayments" hidden>0</span>
+                </a>
+                <a href="#pass-requests" class="nav-link" data-view="pass-requests">
+                    <span>📑</span> Bus Pass Requests <span class="nav-badge" id="navPassRequests" hidden>0</span>
+                </a>
+                <a href="#bus-passes" class="nav-link" data-view="bus-passes">
+                    <span>▤</span> Bus Passes
+                </a>
+                <a href="#cancellations" class="nav-link" data-view="cancellations">
+                    <span>🚫</span> Cancellations <span class="nav-badge" id="navCancellations" hidden>0</span>
+                </a>
+
+                <div class="menu-heading second-heading">MONITORING</div>
+
+                <a href="#tracking" class="nav-link" data-view="tracking">
+                    <span>◎</span> Live Tracking
+                </a>
+                <a href="#reports" class="nav-link" data-view="reports">
+                    <span>📊</span> Reports
+                </a>
+                <a href="#diesel" class="nav-link" data-view="diesel">
+                    <span>⛽</span> Diesel Records
+                </a>
+                <a href="#notifications" class="nav-link" data-view="notifications">
+                    <span>🔔</span> Notifications
+                </a>
+                <a href="#messages" class="nav-link" data-view="messages">
+                    <span>✉️</span> Inbox / Messages <span class="nav-badge" id="navMessages" hidden>0</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="help-card">
+                    <div class="help-icon">?</div>
+                    <h4>VEMU IT Transport</h4>
+                    <p>Campus transportation system connected to MySQL database.</p>
+                </div>
+
+                <button class="logout-btn" id="logoutBtn" type="button">
+                    <span>⇥</span> Logout
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- ==============================================
+         MAIN CONTENT AREA
+    =============================================== -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div class="mobile-brand">VEMUIT-CampusGo</div>
+
+                <div class="breadcrumb">
+                    <span>CampusGo</span>
+                    <span>/</span>
+                    <strong id="crumb">Dashboard</strong>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="search-box">
+                        <span>⌕</span>
+                        <input type="search" id="dashboardSearch" placeholder="Search current section..."
+                            aria-label="Search">
+                    </div>
+
+                    <button class="icon-btn" type="button" title="Refresh Live Data"
+                        onclick="loadStats(true)">⟳</button>
+
+                    <div class="profile">
+                        <div class="avatar">A</div>
+                        <div class="profile-text">
+                            <strong id="adminName">Administrator</strong>
+                            <span>System Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <nav class="mobile-tabs" id="mobileTabs" aria-label="Sections">
+                <a href="#dashboard" class="active">Dashboard</a>
+                <a href="#requests">Requests</a>
+                <a href="#students">Students</a>
+                <a href="#drivers">Drivers</a>
+                <a href="#buses">Buses</a>
+                <a href="#routes">Routes</a>
+                <a href="#fee-assignments">Fees</a>
+                <a href="#payments">Payments</a>
+                <a href="#pass-requests">Pass Requests</a>
+                <a href="#bus-passes">Passes</a>
+                <a href="#cancellations">Cancellations</a>
+                <a href="#tracking">Tracking</a>
+                <a href="#reports">Reports</a>
+                <a href="#diesel">Diesel</a>
+                <a href="#notifications">Notifications</a>
+                <a href="#messages">Messages</a>
+            </nav>
+
+            <section class="page-content">
+
+                <!-- ==============================================
+                 1. DASHBOARD OVERVIEW VIEW
+            =============================================== -->
+                <div class="view active" id="view-dashboard">
+
+                    <div class="welcome-row">
+                        <div>
+                            <p class="eyebrow">ADMINISTRATION</p>
+                            <h1>Admin Dashboard Overview</h1>
+                            <p class="subtitle">Real-time college bus operations, fleet readiness and fee collection
+                                status.</p>
+                        </div>
+                    </div>
+
+                    <!-- 11 Live Database Statistics Cards (Section 4) -->
+                    <div class="stats-grid">
+                        <!-- 1. Total Registered Students -->
+                        <article class="stat-card" onclick="navigateToSection('students')">
+                            <div class="stat-top">
+                                <div class="stat-icon students-icon">🎓</div><span class="stat-label">TOTAL
+                                    STUDENTS</span>
+                            </div>
+                            <h2 id="totalStudents">0</h2>
+                            <p class="stat-description">Active registered students</p>
+                        </article>
+
+                        <!-- 2. Total Registered Drivers -->
+                        <article class="stat-card" onclick="navigateToSection('drivers')">
+                            <div class="stat-top">
+                                <div class="stat-icon drivers-icon">♧</div><span class="stat-label">TOTAL DRIVERS</span>
+                            </div>
+                            <h2 id="totalDrivers">0</h2>
+                            <p class="stat-description">Approved active drivers</p>
+                        </article>
+
+                        <!-- 3. Total Buses -->
+                        <article class="stat-card" onclick="navigateToSection('buses')">
+                            <div class="stat-top">
+                                <div class="stat-icon buses-icon">▰</div><span class="stat-label">TOTAL BUSES</span>
+                            </div>
+                            <h2 id="totalBuses">0</h2>
+                            <p class="stat-description">Total college buses</p>
+                        </article>
+
+                        <!-- 4. Available Buses -->
+                        <article class="stat-card" onclick="navigateToSection('buses', 'busesCondition', 'Available')">
+                            <div class="stat-top">
+                                <div class="stat-icon routes-icon">✓</div><span class="stat-label">AVAILABLE
+                                    BUSES</span>
+                            </div>
+                            <h2 id="statAvailableBuses">0</h2>
+                            <p class="stat-description">Ready for trip</p>
+                        </article>
+
+                        <!-- 5. Total Routes -->
+                        <article class="stat-card" onclick="navigateToSection('routes')">
+                            <div class="stat-top">
+                                <div class="stat-icon routes-icon">⌖</div><span class="stat-label">TOTAL ROUTES</span>
+                            </div>
+                            <h2 id="totalRoutes">0</h2>
+                            <p class="stat-description">Active college transport routes</p>
+                        </article>
+
+                        <!-- 6. Drivers Waiting for Approval -->
+                        <article class="stat-card" onclick="navigateToSection('requests', 'requests', 'Pending')">
+                            <div class="stat-top">
+                                <div class="stat-icon buses-icon">✉</div><span class="stat-label">DRIVER REQUESTS</span>
+                            </div>
+                            <h2 id="statPendingDrivers">0</h2>
+                            <p class="stat-description">Waiting for Driverapproval</p>
+                        </article>
+
+
+
+                        <!-- 8. Working Buses -->
+                        <article class="stat-card" onclick="navigateToSection('buses', 'busesCondition', 'Working')">
+                            <div class="stat-top">
+                                <div class="stat-icon drivers-icon">🚌</div><span class="stat-label">WORKING
+                                    BUSES</span>
+                            </div>
+                            <h2 id="statWorkingBuses">0</h2>
+                            <p class="stat-description">Buses in working condition</p>
+                        </article>
+
+                        <!-- 9. Not Working Buses -->
+                        <article class="stat-card"
+                            onclick="navigateToSection('buses', 'busesCondition', 'Not working')">
+                            <div class="stat-top">
+                                <div class="stat-icon danger-icon">!</div><span class="stat-label">NOT WORKING</span>
+                            </div>
+                            <h2 id="statNotWorkingBuses">0</h2>
+                            <p class="stat-description">Under repair or maintenance</p>
+                        </article>
+
+                        <!-- 10. Pending Bus Pass Requests -->
+                        <article class="stat-card"
+                            onclick="navigateToSection('pass-requests', 'passRequestsStatus', 'Pending')">
+                            <div class="stat-top">
+                                <div class="stat-icon students-icon">📑</div><span class="stat-label">PASS
+                                    REQUESTS</span>
+                            </div>
+                            <h2 id="statPendingPasses">0</h2>
+                            <p class="stat-description">Student pass requests pending</p>
+                        </article>
+
+                        <!-- 11. Total Generated Bus Passes -->
+                        <article class="stat-card" onclick="navigateToSection('bus-passes')">
+                            <div class="stat-top">
+                                <div class="stat-icon routes-icon">▤</div><span class="stat-label">BUS PASSES</span>
+                            </div>
+                            <h2 id="statTotalPasses">0</h2>
+                            <p class="stat-description">Total Buspasses issued</p>
+                        </article>
+                    </div>
+
+                    <!-- Transport Quick Management Cards -->
+                    <div class="section-heading">
+                        <div>
+                            <h2>Quick Management Actions</h2>
+                            <p>Fast navigation to transportation operations</p>
+                        </div>
+                    </div>
+
+                    <div class="management-grid">
+                        <a href="#requests" class="management-card">
+                            <div class="management-icon buses-icon">✉</div>
+                            <div>
+                                <h3>Driver Requests <span class="count-pill" id="pillRequests" hidden>0</span></h3>
+                                <p>Review and verify driver sign-ups and assign salaries.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+
+                        <a href="#payments" class="management-card">
+                            <div class="management-icon routes-icon">💳</div>
+                            <div>
+                                <h3>Payments Verification <span class="count-pill" id="pillPayments" hidden>0</span>
+                                </h3>
+                                <p>Verify bank &amp; UPI fee transactions submitted by students.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+
+                        <a href="#students" class="management-card">
+                            <div class="management-icon students-icon">🎓</div>
+                            <div>
+                                <h3>Students Management</h3>
+                                <p>View student transport assignments and fee status.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+
+                        <a href="#fee-assignments" class="management-card">
+                            <div class="management-icon routes-icon">₹</div>
+                            <div>
+                                <h3>Distance Fee Slabs</h3>
+                                <p>Transportation fee calculations based on pickup stop distance.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+
+                        <a href="#tracking" class="management-card">
+                            <div class="management-icon buses-icon">◎</div>
+                            <div>
+                                <h3>Live GPS Bus Tracking</h3>
+                                <p>Inspect real-time GPS locations of all college buses on map.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+
+                        <a href="#reports" class="management-card">
+                            <div class="management-icon drivers-icon">📊</div>
+                            <div>
+                                <h3>Transportation Reports</h3>
+                                <p>Route occupancy, fee revenue and driver payroll summary.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </a>
+                    </div>
+
+                    <!-- System Information -->
+                    <div class="bottom-grid" style="margin-top: 24px;">
+                        <section class="panel" id="activities" style="grid-column: 1 / -1;">
+                            <div class="panel-header">
+                                <div>
+                                    <h2>Database &amp; Synchronization Status</h2>
+                                    <p>CampusGo backend connection</p>
+                                </div>
+                                <span class="panel-icon">◷</span>
+                            </div>
+
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-mark blue-mark">DB</div>
+                                    <div class="activity-details">
+                                        <strong>MySQL Connection</strong>
+                                        <p id="dbStatus">Connecting to MySQL database...</p>
+                                    </div>
+                                    <span class="activity-time" id="dbIndicator">...</span>
+                                </div>
+
+                                <div class="activity-item">
+                                    <div class="activity-mark green-mark">IO</div>
+                                    <div class="activity-details">
+                                        <strong>Socket.IO Live Events</strong>
+                                        <p id="statsStatus">Waiting for connection</p>
+                                    </div>
+                                </div>
+
+                                <div class="activity-item">
+                                    <div class="activity-mark purple-mark">VEMU</div>
+                                    <div class="activity-details">
+                                        <strong>CampusGo System</strong>
+                                        <p>VEMU Institute of Technology Bus Management System</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="last-updated">Last checked: <span id="lastUpdated">Just now</span></p>
+                        </section>
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                 2. DRIVER REQUESTS VIEW
+            =============================================== -->
+                <div class="view" id="view-requests"></div>
+
+                <!-- ==============================================
+                 3. STUDENTS VIEW
+            =============================================== -->
+                <div class="view" id="view-students"></div>
+
+                <!-- ==============================================
+                 4. DRIVERS VIEW
+            =============================================== -->
+                <div class="view" id="view-drivers"></div>
+
+                <!-- ==============================================
+                 5. BUSES VIEW
+            =============================================== -->
+                <div class="view" id="view-buses"></div>
+
+                <!-- ==============================================
+                 6. ROUTES AND STOPS VIEW
+            =============================================== -->
+                <div class="view" id="view-routes"></div>
+
+                <!-- ==============================================
+                 7. DISTANCE-BASED FEE ASSIGNMENTS VIEW
+            =============================================== -->
+                <div class="view" id="view-fee-assignments"></div>
+
+                <!-- ==============================================
+                 8. PAYMENTS MANAGEMENT VIEW
+            =============================================== -->
+                <div class="view" id="view-payments"></div>
+
+                <!-- ==============================================
+                 9. BUS PASS REQUESTS VIEW
+            =============================================== -->
+                <div class="view" id="view-pass-requests"></div>
+
+                <!-- ==============================================
+                 10. GENERATED BUS PASSES VIEW
+            =============================================== -->
+                <div class="view" id="view-bus-passes"></div>
+
+                <!-- ==============================================
+                 11. LIVE BUS TRACKING VIEW
+            =============================================== -->
+                <div class="view" id="view-tracking"></div>
+
+                <!-- ==============================================
+                 12. REPORTS AND ANALYTICS VIEW
+            =============================================== -->
+                <div class="view" id="view-reports"></div>
+
+                <!-- ==============================================
+                 13. BUS PASS & TRANSPORT CANCELLATIONS VIEW
+            =============================================== -->
+                <div class="view" id="view-cancellations"></div>
+
+                <!-- ==============================================
+                 14. DIESEL REFUELLING RECORDS VIEW
+            =============================================== -->
+                <div class="view" id="view-diesel"></div>
+
+                <!-- ==============================================
+                 15. NOTIFICATIONS & ANNOUNCEMENT CENTER VIEW
+            =============================================== -->
+                <div class="view" id="view-notifications"></div>
+
+                <!-- ==============================================
+                 16. INBOX / CONTACT MESSAGES VIEW
+            =============================================== -->
+                <div class="view" id="view-messages"></div>
+
+                <footer class="footer">
+                    <span>© 2026 CampusGo for VEMU IT</span>
+                    <span>College Bus Management System</span>
+                </footer>
+
+            </section>
+        </main>
+
+    </div>
+
+    <!-- ==============================================
+     MODAL DIALOGS
+=============================================== -->
+
+    <!-- 1. Universal Form Modal (Add/Edit) -->
+    <dialog id="formDialog">
+        <form id="dlgForm" autocomplete="off">
+            <div class="dialog-head">
+                <h2 id="dlgTitle">Manage Record</h2>
+                <button type="button" class="dialog-close" onclick="closeFormModal()" aria-label="Close">✕</button>
+            </div>
+            <div class="dialog-body" id="dlgBody"></div>
+            <div class="dialog-foot">
+                <button type="button" class="btn" onclick="closeFormModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="dlgSubmit">Save &amp; Confirm</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- 2. Universal View Details Modal -->
+    <dialog id="detailsDialog"
+        style="width: min(600px, calc(100vw - 32px)); border:none; border-radius:16px; box-shadow:0 24px 60px rgba(16,26,69,0.28);">
+        <div class="dialog-head">
+            <h2 id="detTitle">Record Details</h2>
+            <button type="button" class="dialog-close" onclick="closeDetailsModal()" aria-label="Close">✕</button>
+        </div>
+        <div class="dialog-body" id="detBody" style="display:block; padding: 20px;"></div>
+        <div class="dialog-foot" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <span id="detCustomAction"></span>
+            <button type="button" class="btn" onclick="closeDetailsModal()">Close</button>
+        </div>
+    </dialog>
+
+    <!-- 3. Official Fee Receipt Preview & Print Modal -->
+    <dialog id="receiptPreviewDialog"
+        style="width: min(720px, calc(100vw - 32px)); border:none; border-radius:18px; padding:0; box-shadow:0 24px 60px rgba(16,26,69,0.35);">
+        <div class="dialog-head">
+            <h2>Official Transportation Fee Receipt</h2>
+            <button type="button" class="dialog-close" onclick="closeReceiptPreviewModal()"
+                aria-label="Close">✕</button>
+        </div>
+        <div style="padding: 24px 20px; overflow-y:auto; max-height:calc(85vh - 140px);" id="receiptPrintArea"></div>
+        <div class="dialog-foot" style="display:flex; justify-content:space-between; align-items:center;">
+            <button type="button" class="btn" onclick="closeReceiptPreviewModal()">Close</button>
+            <button type="button" class="btn btn-primary" onclick="printCurrentReceipt()">🖨️ Print Official
+                Receipt</button>
+        </div>
+    </dialog>
+
+    <!-- 4. Digital Bus Pass Card Preview & Print Modal -->
+    <dialog id="passPreviewDialog"
+        style="width: min(520px, calc(100vw - 32px)); border:none; border-radius:18px; padding:0; box-shadow:0 24px 60px rgba(16,26,69,0.35);">
+        <div class="dialog-head">
+            <h2>Official Student Bus Pass</h2>
+            <button type="button" class="dialog-close" onclick="closePassPreviewModal()" aria-label="Close">✕</button>
+        </div>
+        <div style="padding: 24px 20px;" id="passPrintArea"></div>
+        <div class="dialog-foot" style="display:flex; justify-content:space-between; align-items:center;">
+            <button type="button" class="btn" onclick="closePassPreviewModal()">Close</button>
+            <button type="button" class="btn btn-primary" onclick="printCurrentPass()">🖨️ Print Official Pass</button>
+        </div>
+    </dialog>
+
+    <!-- 5. Bus Pass / Transport Cancellation Approval Modal -->
+    <dialog id="approveCancelDialog"
+        style="width: min(580px, calc(100vw - 32px)); border:none; border-radius:18px; padding:0; box-shadow:0 24px 60px rgba(16,26,69,0.35);">
+        <form id="approveCancelForm">
+            <div class="dialog-head">
+                <h2>Approve Cancellation Request</h2>
+                <button type="button" class="dialog-close" onclick="closeApproveCancelModal()"
+                    aria-label="Close">✕</button>
+            </div>
+            <div class="dialog-body" style="padding: 22px 24px;">
+                <input type="hidden" id="approveCancelId">
+                <div id="approveCancelSummary"
+                    style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; font-size: 13.5px; line-height: 1.6;">
+                </div>
+
+                <div class="field full" style="margin-bottom: 16px;">
+                    <label for="approveFineAmount"
+                        style="font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
+                        Applicable Cancellation Fine (₹) <span style="color: #e11d48;">*</span>
+                    </label>
+                    <input type="number" id="approveFineAmount" name="fine_amount" min="0" step="50" value="500"
+                        required
+                        style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 15px; font-weight: 700; color: #0f172a;">
+                    <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">
+                        Institutional default fine is ₹500.00. Deactivates active pass and transport assignment upon
+                        approval.
+                    </small>
+                </div>
+
+                <div class="field full">
+                    <label for="approveRemarks"
+                        style="font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
+                        Administrative Remarks
+                    </label>
+                    <textarea id="approveRemarks" name="admin_remarks" rows="3"
+                        placeholder="Enter approval note or confirmation..."
+                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; resize: vertical;">Approved as per VEMU IT transport rules. Fine applied.</textarea>
+                </div>
+            </div>
+            <div class="dialog-foot"
+                style="display:flex; justify-content:flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #f1f5f9;">
+                <button type="button" class="btn" onclick="closeApproveCancelModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnConfirmApproveCancel"
+                    style="background: #059669; border-color: #059669;">
+                    ✓ Confirm Approval &amp; Apply Fine
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- 6. Bus Pass / Transport Cancellation Rejection Modal -->
+    <dialog id="rejectCancelDialog"
+        style="width: min(520px, calc(100vw - 32px)); border:none; border-radius:18px; padding:0; box-shadow:0 24px 60px rgba(16,26,69,0.35);">
+        <form id="rejectCancelForm">
+            <div class="dialog-head">
+                <h2>Reject Cancellation Request</h2>
+                <button type="button" class="dialog-close" onclick="closeRejectCancelModal()"
+                    aria-label="Close">✕</button>
+            </div>
+            <div class="dialog-body" style="padding: 22px 24px;">
+                <input type="hidden" id="rejectCancelId">
+                <div id="rejectCancelSummary"
+                    style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; font-size: 13.5px; line-height: 1.6;">
+                </div>
+
+                <div class="field full">
+                    <label for="rejectRemarks"
+                        style="font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
+                        Reason for Rejection <span style="color: #e11d48;">*</span>
+                    </label>
+                    <textarea id="rejectRemarks" name="admin_remarks" rows="3" required
+                        placeholder="Explain why the cancellation request is rejected..."
+                        style="width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; resize: vertical;"></textarea>
+                    <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">
+                        Rejection keeps the student's bus pass and transportation assignment active with no penalty
+                        fine.
+                    </small>
+                </div>
+            </div>
+            <div class="dialog-foot"
+                style="display:flex; justify-content:flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #f1f5f9;">
+                <button type="button" class="btn" onclick="closeRejectCancelModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnConfirmRejectCancel"
+                    style="background: #e11d48; border-color: #e11d48;">
+                    ✕ Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Toast notification box -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+    <!-- Leaflet.js Map Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- CampusGo Admin Dashboard Controller -->
+    <!-- Dedicated Printable Bus Pass Container (Clean unclipped A4 print layout) -->
+    <div id="printOnlyPassContainer" class="print-only-container"></div>
+
+    <!-- CampusGo Admin Dashboard Controller -->
+    <script src="../js/admin-dashboard.js"></script>
+
+</body>
+
+</html>

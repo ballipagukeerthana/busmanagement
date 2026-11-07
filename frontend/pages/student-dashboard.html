@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | CampusGo - VEMU IT</title>
+    <meta name="description"
+        content="CampusGo Student Dashboard for VEMU Institute of Technology. Manage your profile, route, fee payments, receipts, bus pass, and live bus tracking.">
+
+    <!-- Google Fonts & Stylesheets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="../css/student-dashboard.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- =========================================================
+         SIDEBAR NAVIGATION
+    ========================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/images/vemu-logo.jpg" alt="VEMU IT Logo" class="brand-logo-img">
+                <div class="brand-text">
+                    <h2>VEMU IT-CampusGo</h2>
+                    <span>Student Dashboard</span>
+                </div>
+            </div>
+
+            <!-- Student Quick Profile Badge in Sidebar -->
+            <div class="student-badge-sidebar" id="sidebarStudentBadge">
+                <div class="student-avatar-circle" id="sidebarAvatar">ST</div>
+                <div class="student-badge-info">
+                    <h4 id="sidebarStudentName">Loading...</h4>
+                    <p id="sidebarStudentRoll">--------</p>
+                </div>
+            </div>
+
+            <!-- Sidebar Navigation Menu (9 items) -->
+            <nav class="sidebar-nav">
+                <a class="nav-link active" data-view="dashboard" id="navDashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a class="nav-link" data-view="profile" id="navProfile">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+                <a class="nav-link" data-view="route" id="navRoute">
+                    <span class="nav-icon">🗺️</span> My Route
+                </a>
+                <a class="nav-link" data-view="driver-bus" id="navDriverBus">
+                    <span class="nav-icon">🚌</span> My Driver &amp; Bus
+                </a>
+                <a class="nav-link" data-view="fee" id="navFee">
+                    <span class="nav-icon">💳</span> Fee Payment
+                    <span class="nav-badge" id="navFeeBadge" style="display:none;">Due</span>
+                </a>
+                
+                <a class="nav-link" data-view="bus-pass" id="navBusPass">
+                    <span class="nav-icon">🎫</span> Bus Request / Pass
+                </a>
+                <a class="nav-link" data-view="tracking" id="navTracking">
+                    <span class="nav-icon">📍</span> Live Tracking
+                    <span class="nav-badge" id="navTrackingBadge" style="display:none; background:#10B981;">LIVE</span>
+                </a>
+                <a class="nav-link" data-view="cancellation" id="navCancellation">
+                    <span class="nav-icon">🚫</span> Cancel Bus Pass
+                </a>
+            </nav>
+
+            <!-- Sidebar Footer with Logout Button -->
+            <div class="sidebar-footer">
+                <button type="button" class="btn-logout" id="btnLogout">
+                    <span>🚪</span> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- =========================================================
+         MAIN CONTENT AREA
+    ========================================================== -->
+        <main class="main-content">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button type="button" class="mobile-menu-toggle" id="btnToggleSidebar"
+                        aria-label="Toggle Navigation">
+                        ☰
+                    </button>
+                    <div class="page-title-box">
+                        <h1 id="topbarTitle">Dashboard Overview</h1>
+                        <span id="topbarSubtitle">VEMU Institute of Technology Bus Transportation System</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Notification Bell & Center -->
+                    <div class="notif-wrapper" style="position: relative;">
+                        <button type="button" class="notif-bell-btn" id="btnStudentNotifs" title="Notifications" aria-label="Notifications">
+                            <span>🔔</span>
+                            <span class="notif-count-badge" id="studentNotifBadge" style="display:none;">0</span>
+                        </button>
+                        <div class="notif-dropdown" id="studentNotifDropdown" style="display:none;">
+                            <div class="notif-dropdown-header">
+                                <h4>Notifications</h4>
+                                <button type="button" class="btn-text-sm" id="btnStudentMarkAllRead">Mark all read</button>
+                            </div>
+                            <div class="notif-dropdown-list" id="studentNotifList">
+                                <p class="notif-empty">No notifications yet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Trip Indicator Pill -->
+                    <div class="trip-indicator-pill idle" id="topbarTripPill">
+                        <span class="pulsing-dot"></span>
+                        <span id="topbarTripText">Trip Not Started</span>
+                    </div>
+
+                    <!-- Socket Connection Indicator -->
+                    <div class="socket-status-badge">
+                        <span class="status-dot connected" id="socketDot"></span>
+                        <span id="socketText">Live Sync</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Body -->
+            <div class="content-body">
+
+                <!-- Global Alert Box -->
+                <div class="global-alert info" id="globalAlert" style="display:none;">
+                    <span id="globalAlertIcon">ℹ️</span>
+                    <span id="globalAlertMessage">Notice message</span>
+                </div>
+
+                <!-- CHANGE 4: Inactive Profile Top Banner -->
+                <div class="global-alert danger" id="profileInactiveBanner" style="display:none; margin-bottom: 22px;">
+                    <span style="font-size:20px;">🚫</span>
+                    <div>
+                        <strong>Your profile is inactive because your bus pass was cancelled. Please contact the transport office.</strong>
+                    </div>
+                </div>
+
+                <!-- =========================================================
+                 VIEW 1: DASHBOARD OVERVIEW
+            ========================================================== -->
+                <section class="view-section active" id="view-dashboard">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Welcome back, <span id="dashWelcomeName">Student</span>! 👋</h2>
+                            <p>Academic Year 2025–2026 &bull; VEMU IT Transport Services &bull; Student Roll: <strong
+                                    id="dashWelcomeRoll">...</strong></p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshDash">
+                                🔄 Refresh Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 8 Summary Cards Grid -->
+                    <div class="summary-cards-grid">
+                        <!-- Card 1: Student Profile -->
+                        <div class="summary-card" data-action="go-profile">
+                            <div class="summary-card-icon icon-navy">👤</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Student Profile</span>
+                                <div class="card-value" id="dashCardStudentName">Loading...</div>
+                                <span class="card-subtext" id="dashCardBranchRoll">Branch: --- &bull; Roll: ---</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Selected Route -->
+                        <div class="summary-card" data-action="go-route">
+                            <div class="summary-card-icon icon-blue">🗺️</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Selected Route</span>
+                                <div class="card-value" id="dashCardRouteName">Not Assigned</div>
+                                <span class="card-subtext" id="dashCardStopName">Boarding: ---</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Assigned Bus Status -->
+                        <div class="summary-card" data-action="go-driver-bus">
+                            <div class="summary-card-icon icon-cyan">🚌</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Assigned Bus Status</span>
+                                <div class="card-value" id="dashCardBusNumber">Pending</div>
+                                <span class="card-subtext" id="dashCardBusStatus">Waiting for admin</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Total Fee -->
+                        <div class="summary-card" data-action="go-fee">
+                            <div class="summary-card-icon icon-amber">💰</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Total Fee</span>
+                                <div class="card-value" id="dashCardTotalFee">₹0</div>
+                                <span class="card-subtext" id="dashCardFeeDistance">Based on boarding stop</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 5: Amount Paid -->
+                        <div class="summary-card" data-action="go-fee">
+                            <div class="summary-card-icon icon-emerald">✅</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Amount Paid</span>
+                                <div class="card-value" id="dashCardAmountPaid">₹0</div>
+                                <span class="card-subtext" id="dashCardPaidSubtitle">Verified by records</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 6: Outstanding Amount -->
+                        <div class="summary-card" data-action="go-fee">
+                            <div class="summary-card-icon icon-rose">⚠️</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Balance Amount</span>
+                                <div class="card-value" id="dashCardOutstandingFee">₹0</div>
+                                <span class="card-subtext" id="dashCardDueSubtitle">Current balance</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 7: Payment Status -->
+                        <div class="summary-card" data-action="go-fee">
+                            <div class="summary-card-icon icon-blue">💳</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Payment Status</span>
+                                <div class="card-value">
+                                    <span class="badge badge-warning" id="dashCardPaymentBadge">Pending</span>
+                                </div>
+                                <span class="card-subtext" id="dashCardPaymentDate">No payments recorded</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 8: Bus Request Status -->
+                        <div class="summary-card" data-action="go-bus-pass">
+                            <div class="summary-card-icon icon-emerald">🎫</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Bus Request Status</span>
+                                <div class="card-value">
+                                    <span class="badge badge-neutral" id="dashCardRequestBadge">Checking...</span>
+                                </div>
+                                <span class="card-subtext" id="dashCardPassSubtitle">Official VEMU Bus Pass</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Shortcuts -->
+                    <div class="quick-actions-panel">
+                        <h3>⚡ Quick Shortcuts</h3>
+                        <div class="quick-actions-grid">
+                            <button type="button" class="quick-action-btn" id="btnQuickPayFee">
+                                <span>💳</span> Pay Transportation Fee
+                            </button>
+                            <button type="button" class="quick-action-btn" id="btnQuickViewPass">
+                                <span>🎫</span> View Bus Pass
+                            </button>
+                            <button type="button" class="quick-action-btn" id="btnQuickLiveTrack">
+                                <span>📍</span> Live Bus Tracking
+                            </button>
+                            <button type="button" class="quick-action-btn" id="btnQuickEditProfile">
+                                <span>✏️</span> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Assignment Snapshot Card -->
+                    <div class="table-card">
+                        <div class="card-title-row">
+                            <h3>🚌 My Transport Summary</h3>
+                            <span class="badge badge-info" id="dashTransportBadge">Active Route</span>
+                        </div>
+                        <div class="data-row-list" id="dashTransportList">
+                            <div class="data-row">
+                                <span>Assigned Route</span>
+                                <strong id="dashSumRoute">Loading...</strong>
+                            </div>
+                            <div class="data-row">
+                                <span>Designated Boarding Stop</span>
+                                <strong id="dashSumStop">Loading...</strong>
+                            </div>
+                            <div class="data-row">
+                                <span>Assigned College Bus</span>
+                                <strong id="dashSumBus">Loading...</strong>
+                            </div>
+                            <div class="data-row">
+                                <span>Designated Driver</span>
+                                <strong id="dashSumDriver">Loading...</strong>
+                            </div>
+                            <div class="data-row">
+                                <span>Driver Contact Number</span>
+                                <strong id="dashSumDriverPhone">Loading...</strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 2: MY PROFILE
+            ========================================================== -->
+                <section class="view-section" id="view-profile">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>My Student Profile</h2>
+                            <p>View your registered student details and transportation profile connected to MySQL database.</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-primary" id="btnOpenEditProfile">
+                                ✏️ Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-card-grid">
+                        <!-- Identity Left Card -->
+                        <div class="profile-identity-card">
+                            <div class="profile-big-avatar" id="profAvatar">ST</div>
+                            <h3 id="profNameDisplay">Student Name</h3>
+                            <div class="roll-pill" id="profRollPill">254M5A0000</div>
+                            <div class="profile-meta-list">
+                                <div class="profile-meta-item">
+                                    <span>Department / Branch:</span>
+                                    <strong id="profMetaBranch">---</strong>
+                                </div>
+                                <div class="profile-meta-item">
+                                    <span>Academic Year:</span>
+                                    <strong id="profMetaYear">---</strong>
+                                </div>
+                                <div class="profile-meta-item">
+                                    <span>Account Status:</span>
+                                    <strong id="profMetaStatus" style="color:var(--success);">Active</strong>
+                                </div>
+                                <div class="profile-meta-item">
+                                    <span>Registered On:</span>
+                                    <strong id="profMetaCreated">---</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details Right Card -->
+                        <div class="profile-details-card">
+                            <div class="card-title-row">
+                                <h3>📋 Registered Information</h3>
+                                
+                            </div>
+
+                            <div class="profile-fields-grid">
+                                <!-- Full Name -->
+                                <div class="profile-field-group">
+                                    <label>Student Full Name</label>
+                                    <div class="profile-field-value" id="profValName">---</div>
+                                </div>
+
+                                <!-- Mobile Number -->
+                                <div class="profile-field-group">
+                                    <label>Mobile Number</label>
+                                    <div class="profile-field-value" id="profValPhone">---</div>
+                                </div>
+
+                                <!-- Roll Number -->
+                                <div class="profile-field-group">
+                                    <label>Roll Number</label>
+                                    <div class="profile-field-value read-only" id="profValRoll">---</div>
+                                </div>
+
+                                <!-- Branch -->
+                                <div class="profile-field-group">
+                                    <label>Branch / Department</label>
+                                    <div class="profile-field-value read-only" id="profValBranch">---</div>
+                                </div>
+
+                                <!-- Academic Year -->
+                                <div class="profile-field-group">
+                                    <label>Academic Year</label>
+                                    <div class="profile-field-value read-only" id="profValYear">---</div>
+                                </div>
+
+                                <!-- Email Address -->
+                                <div class="profile-field-group">
+                                    <label>Email Address</label>
+                                    <div class="profile-field-value read-only" id="profValEmail">---</div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="profile-field-group full">
+                                    <label>Residential Address</label>
+                                    <div class="profile-field-value read-only" id="profValAddress">---</div>
+                                </div>
+
+                                <!-- Selected Route -->
+                                <div class="profile-field-group">
+                                    <label>Selected Route</label>
+                                    <div class="profile-field-value read-only" id="profValRoute">---</div>
+                                </div>
+
+                                <!-- Selected Stop -->
+                                <div class="profile-field-group">
+                                    <label>Boarding Stop</label>
+                                    <div class="profile-field-value read-only" id="profValStop">---</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 3: MY ROUTE & STOPS
+            ========================================================== -->
+                <section class="view-section" id="view-route">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>My Selected Transportation Route</h2>
+                            <p>Complete route roadmap from start to VEMU IT Campus with all ordered stops.</p>
+                        </div>
+                    </div>
+
+                    <!-- Route Hero Card -->
+                    <div class="route-hero-card">
+                        <div class="card-title-row">
+                            <h3 id="routeCardTitle">Route: Loading...</h3>
+                            <span class="badge badge-success" id="routeCardStatus">Active</span>
+                        </div>
+
+                        <div class="route-meta-grid">
+                            <div class="route-meta-item">
+                                <small>Starting Point</small>
+                                <strong id="routeStartLoc">---</strong>
+                            </div>
+                            <div class="route-meta-item">
+                                <small>Destination</small>
+                                <strong id="routeEndLoc">VEMU IT Campus</strong>
+                            </div>
+                            <div class="route-meta-item">
+                                <small>Your Boarding Stop</small>
+                                <strong id="routeStudentStop" style="color:var(--royal-blue);">---</strong>
+                            </div>
+                            <div class="route-meta-item">
+                                <small>Applicable Annual Fee</small>
+                                <strong id="routeApplicableFee" style="color:var(--deep-navy);">₹0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stops Roadmap Card -->
+                    <div class="stops-roadmap-card">
+                        <div class="card-title-row">
+                            <h3>📍 Ordered Route Stops</h3>
+                            <span style="font-size:12px; color:var(--text-secondary);">Highlighted stop indicates your
+                                assigned boarding point</span>
+                        </div>
+
+                        <div class="timeline-stops-list" id="routeStopsTimeline">
+                            <!-- Populated dynamically via JS -->
+                            <div class="stop-timeline-node">
+                                <div class="stop-order-bubble">1</div>
+                                <div class="stop-node-details">
+                                    <h4>Loading stops...</h4>
+                                    <span>Please wait...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 4: MY DRIVER & BUS
+            ========================================================== -->
+                <section class="view-section" id="view-driver-bus">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>My Assigned Bus &amp; Driver</h2>
+                            <p>Real-time vehicle and crew details connected to your approved transportation record.</p>
+                        </div>
+                    </div>
+
+                    <!-- Unassigned / Pending Warning State (shown if bus not assigned) -->
+                    <div class="global-alert warning" id="busPendingAlert" style="display:none;">
+                        <span>⚠️</span>
+                        <div>
+                            <strong>Bus / Driver Assignment Pending:</strong>
+                            <span id="busPendingAlertText">Your bus request is currently pending or awaiting bus
+                                assignment from the Transport Office.</span>
+                        </div>
+                    </div>
+
+                    <div class="driver-bus-grid" id="driverBusContent">
+                        <!-- Bus Info Card -->
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <div class="info-card-avatar">🚌</div>
+                                <div class="info-card-title">
+                                    <h3 id="busCardNumber">BUS-00</h3>
+                                    <span id="busCardReg">College Bus</span>
+                                </div>
+                            </div>
+                            <div class="data-row-list">
+                                <div class="data-row">
+                                    <span>Bus Number</span>
+                                    <strong id="busRowNumber">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Vehicle Name / Model</span>
+                                    <strong id="busRowName">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Seating Capacity</span>
+                                    <strong id="busRowCapacity">--- Seats</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Assigned Route</span>
+                                    <strong id="busRowRoute">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Vehicle Status</span>
+                                    <strong id="busRowStatus"><span class="badge badge-success">Active</span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Driver Info Card -->
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <div class="info-card-avatar">👨‍✈️</div>
+                                <div class="info-card-title">
+                                    <h3 id="driverCardName">Driver Name</h3>
+                                    <span>VEMU IT Certified Driver</span>
+                                </div>
+                            </div>
+                            <div class="data-row-list">
+                                <div class="data-row">
+                                    <span>Driver Name</span>
+                                    <strong id="driverRowName">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Contact Mobile</span>
+                                    <strong id="driverRowPhone">
+                                        <a href="#" id="driverPhoneLink"
+                                            style="color:var(--royal-blue); text-decoration:none;">---</a>
+                                    </strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Email Address</span>
+                                    <strong id="driverRowEmail">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Driving License No.</span>
+                                    <strong id="driverRowLicense">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Driving Experience</span>
+                                    <strong id="driverRowExperience">---</strong>
+                                </div>
+                                <div class="data-row">
+                                    <span>Driver Status</span>
+                                    <strong id="driverRowStatus"><span
+                                            class="badge badge-success">Active</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 5: FEE PAYMENT
+            ========================================================== -->
+                <section class="view-section" id="view-fee">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Transportation Fee &amp; Online Payment</h2>
+                            <p>Review verified fee schedules, settle outstanding dues securely, and inspect past payment
+                                transactions.</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success btn-lg" id="btnOpenPayModal">
+                                💳 Pay Outstanding Fee
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fee Summary Banner -->
+                    <div class="fee-summary-banner">
+                        <div class="fee-banner-text">
+                            <h3>Transportation Fee Schedule (2025–2026)</h3>
+                            <p id="feeBannerSubtext">Calculated from VEMU IT transport tariffs for your designated stop.
+                            </p>
+                        </div>
+                        <div class="fee-banner-amount">
+                            <span>remanining Balance</span>
+                            <strong id="feeBannerOutstanding">₹0</strong>
+                        </div>
+                    </div>
+
+                    <!-- Fee Metrics Overview Grid -->
+                    <div class="summary-cards-grid" style="margin-bottom:24px;">
+                        <div class="summary-card">
+                            <div class="summary-card-icon icon-blue">🏷️</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Applicable Fee</span>
+                                <div class="card-value" id="feeMetricApplicable">₹0</div>
+                                <span class="card-subtext" id="feeMetricStop">Stop: ---</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-card-icon icon-emerald">💵</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Total Amount Paid</span>
+                                <div class="card-value" id="feeMetricPaid">₹0</div>
+                                <span class="card-subtext">Verified by record</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-card-icon icon-rose">⏳</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Remaining Balance</span>
+                                <div class="card-value" id="feeMetricDue">₹0</div>
+                                <span class="card-subtext" id="feeMetricDueLabel">Due now</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-card-icon icon-cyan">📋</div>
+                            <div class="summary-card-content">
+                                <span class="card-label">Payment Status</span>
+                                <div class="card-value">
+                                    <span class="badge badge-warning" id="feeMetricBadge">Pending</span>
+                                </div>
+                                <span class="card-subtext">Auto-synced</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment History Table Card -->
+                    <div class="table-card">
+                        <div class="card-title-row">
+                            <h3>📜 Payment History &amp; Verified Transactions</h3>
+                            <span style="font-size:12px; color:var(--text-secondary);">Stored securely in CampusGo
+                                database</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Txn ID</th>
+                                        <th>Date &amp; Time</th>
+                                        <th>Payment Mode</th>
+                                        <th>Reference No</th>
+                                        <th>Amount Paid</th>
+                                        <th>Status</th>
+                                        <th>Receipt</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentHistoryBody">
+                                    <tr>
+                                        <td colspan="7"
+                                            style="text-align:center; padding:24px; color:var(--text-muted);">
+                                            Loading payment transactions...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 6: MY RECEIPT
+            ========================================================== -->
+                <section class="view-section" id="view-receipt">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Official Payment Receipts</h2>
+                            <p>Generate, preview, and print verifiable receipts for all confirmed fee transactions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Receipts Grid / Selector -->
+                    <div class="table-card" style="margin-bottom:24px;">
+                        <div class="card-title-row">
+                            <h3>🧾 Available Payment Receipts</h3>
+                            <span style="font-size:12px; color:var(--text-secondary);">Select a receipt below to view
+                                full details and print</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Receipt #</th>
+                                        <th>Payment Date</th>
+                                        <th>Amount</th>
+                                        <th>Payment Method</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receiptsListBody">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="text-align:center; padding:24px; color:var(--text-muted);">
+                                            Loading receipts...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Printable Receipt Display Card -->
+                    <div class="table-card" id="receiptDisplayCard" style="display:none;">
+                        <div class="card-title-row">
+                            <h3>📄 Receipt Preview</h3>
+                            <div>
+                                <button type="button" class="btn btn-primary" id="btnPrintCurrentReceipt">
+                                    🖨️ Print Receipt (PDF)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="receiptPreviewContainer"
+                            style="padding:16px; background:#FFFFFF; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <!-- Dynamic rendered receipt -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 7: BUS REQUEST / MY BUS PASS
+            ========================================================== -->
+                <section class="view-section" id="view-bus-pass">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Bus Request &amp; Official Bus Pass</h2>
+                            <p>Track your transport approval status and access your digital VEMU IT student bus pass.
+                            </p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-primary" id="btnOpenApplyPass" style="display:none;">
+                                📝 Submit Bus Request
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btnPrintBusPass" style="display:none;">
+                                🖨️ Print Bus Pass (PDF)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- State 0: Route Changed — pay new fee to get new pass -->
+                    <div class="global-alert warning" id="passRouteChangedContainer" style="display:none;">
+                        <span style="font-size:28px;">🔄</span>
+                        <div>
+                            <h4 style="font-size:15px; font-weight:800; color:var(--warning-text);">Route Changed — New Bus Pass Required</h4>
+                            <p style="margin-top:4px; font-size:13px;" id="passRouteChangedDetails">
+                                Your route has been updated. Please pay the new route fee to receive your updated bus pass.
+                            </p>
+                            <button type="button" class="btn btn-primary btn-sm" style="margin-top:10px;"
+                                onclick="switchView('fee')">
+                                💳 Go to Fee Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- State 1: Request Pending Alert -->
+                    <div class="global-alert warning" id="passPendingContainer" style="display:none;">
+                        <span style="font-size:24px;">⏳</span>
+                        <div>
+                            <h4 style="font-size:15px; font-weight:800; color:var(--warning-text);">Waiting for Admin
+                                Approval</h4>
+                            <p style="margin-top:4px; font-size:13px;" id="passPendingDetails">Your bus pass request is
+                                submitted and under review by the Transportation Office. Your bus and driver will appear
+                                here once approved.</p>
+                        </div>
+                    </div>
+
+                    <!-- State 2: Request Rejected Alert -->
+                    <div class="global-alert danger" id="passRejectedContainer" style="display:none;">
+                        <span style="font-size:24px;">❌</span>
+                        <div>
+                            <h4 style="font-size:15px; font-weight:800; color:var(--danger-text);">Bus Request Rejected
+                            </h4>
+                            <p style="margin-top:4px; font-size:13px;" id="passRejectedDetails">Your transport request
+                                was not approved. Please consult the Transport Office or re-apply.</p>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnReapplyPass"
+                                style="margin-top:10px;">
+                                Re-apply Bus Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- State 3: Not Applied State -->
+                    <div class="table-card" id="passNotAppliedContainer"
+                        style="display:none; text-align:center; padding:48px 24px;">
+                        <div style="font-size:48px; margin-bottom:14px;">🚌</div>
+                        <h3 style="font-size:18px; font-weight:800; color:var(--deep-navy); margin-bottom:8px;">No Bus
+                            Pass Request Found</h3>
+                        <p style="font-size:13px; color:var(--text-secondary); max-width:500px; margin:0 auto 20px;">You
+                            have not yet submitted a bus pass application for this academic year. Apply now to get
+                            assigned to a college bus route and receive your bus pass.</p>
+                        <button type="button" class="btn btn-primary btn-lg" id="btnStartPassRequest">
+                            📝 Apply for Bus Pass Now
+                        </button>
+                    </div>
+
+                    <!-- State 4: Approved & Valid Bus Pass Card -->
+                    <div id="passApprovedContainer" style="display:none;">
+                        <div style="display:flex; justify-content:center; margin-bottom:24px;">
+                            <div id="officialBusPassCard">
+                                <!-- Populated with official VEMU bus pass layout -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 8: LIVE TRACKING
+            ========================================================== -->
+                <section class="view-section" id="view-tracking">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Live Bus GPS Tracking</h2>
+                            <p>Strictly scoped to your assigned bus. Track the vehicle's real-time location and route
+                                stop progress.</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshTracking">
+                                🔄 Refresh GPS
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CHANGE 4: Inactive Profile Alert for Live Tracking -->
+                    <div class="global-alert danger" id="trackInactiveAlert" style="display:none;">
+                        <span>🚫</span>
+                        <div>
+                            <strong>Live tracking is not available for inactive profiles</strong>
+                        </div>
+                    </div>
+
+                    <!-- Unassigned / Pending Banner -->
+                    <div class="global-alert warning" id="trackUnassignedAlert" style="display:none;">
+                        <span>⚠️</span>
+                        <div>
+                            <strong>Live Tracking Unavailable:</strong> You do not have an active confirmed bus
+                            assignment yet. Live tracking becomes available once your bus is assigned by the Admin.
+                        </div>
+                    </div>
+
+                    <!-- Tracking Container -->
+                    <div class="tracking-layout-grid" id="trackMainContainer">
+                        <!-- Left: Map Wrapper Card -->
+                        <div class="map-wrapper-card">
+                            <!-- HUD Bar -->
+                            <div class="map-hud-bar">
+                                <div class="map-hud-item">
+                                    <span>Bus:</span>
+                                    <strong id="hudBusNumber">BUS-01</strong>
+                                </div>
+                                <div class="map-hud-item">
+                                    <span>Driver:</span>
+                                    <strong id="hudDriverName">Vijay Kumar</strong>
+                                </div>
+                                <div class="map-hud-item">
+                                    <span>Speed:</span>
+                                    <strong id="hudSpeed">0 km/h</strong>
+                                </div>
+                                <div class="map-hud-item">
+                                    <span>Last Updated:</span>
+                                    <strong id="hudLastUpdated">--:--</strong>
+                                </div>
+                            </div>
+
+                            <!-- Leaflet Map Container -->
+                            <div id="studentLiveMap"></div>
+
+                            <!-- Trip Banner at Bottom of Map -->
+                            <div id="trackTripStatusBanner"
+                                style="padding:12px 20px; background:#F8FAFC; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; font-size:12.5px;">
+                                <div>
+                                    <span style="color:var(--text-muted); font-weight:700;">TRIP STATUS:</span>
+                                    <span id="trackTripStatusText"
+                                        style="margin-left:6px; font-weight:800; color:var(--deep-navy);">Trip Not
+                                        Started</span>
+                                </div>
+                                <div>
+                                    <span style="color:var(--text-muted); font-weight:700;">UPCOMING STOP:</span>
+                                    <strong id="trackUpcomingStop"
+                                        style="margin-left:6px; color:var(--royal-blue);">--</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Route Stops Checklist -->
+                        <div class="tracking-sidebar-card">
+                            <h3>
+                                <span>📍</span> Route Stops Progress
+                            </h3>
+                            <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px;">Live stop
+                                milestone tracking updated as driver advances.</p>
+                            <div class="live-stops-checklist" id="trackStopsChecklist">
+                                <!-- Populated with stop items -->
+                                <div class="live-stop-item upcoming">
+                                    <span>Loading stops...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =========================================================
+                 VIEW 9: TRANSPORTATION & BUS PASS CANCELLATION
+            ========================================================== -->
+                <section class="view-section" id="view-cancellation">
+                    <div class="section-welcome-bar">
+                        <div class="welcome-info">
+                            <h2>Transportation Cancellation Request 🚫</h2>
+                            <p>Request switching from VEMU IT college van transportation to your own transportation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Active Transport / Pass Overview Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-head">
+                            <h3><span>🎫</span> Current Active Transportation Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="detail-grid" id="cancelCurrentPassGrid">
+                                <div class="detail-item">
+                                    <label>Bus Pass Number</label>
+                                    <strong id="cancelPassNumber">—</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Assigned Route</label>
+                                    <strong id="cancelRouteName">—</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Pickup / Drop Stop</label>
+                                    <strong id="cancelStopName">—</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Assigned Bus</label>
+                                    <strong id="cancelBusNumber">—</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Amount Paid</label>
+                                    <strong id="cancelAmountPaid">—</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Pass Status</label>
+                                    <span class="badge" id="cancelPassStatus">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending or Latest Decision Banner -->
+                    <div id="cancellationDecisionCard" style="display:none; margin-bottom: 24px;"></div>
+
+                    <!-- Cancellation Request Submission Form Card -->
+                    <div class="card" id="cancelFormCard">
+                        <div class="card-head">
+                            <h3><span>📝</span> Submit Cancellation Request</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="cancelPassForm">
+                                <div class="global-alert info" style="margin-bottom: 18px;">
+                                    <span>ℹ️</span>
+                                    <span>
+                                        <strong>Important Institutional Policy:</strong> Upon Administration approval, your college bus pass and transportation assignment will be deactivated, and an institutional cancellation fee of <strong>₹500.00</strong> will be charged. If rejected, your pass remains active with no fine charged.
+                                    </span>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 18px;">
+                                    <label for="cancelReasonSelect" style="font-weight: 700; margin-bottom: 6px; display: block;">Primary Reason *</label>
+                                    <select class="form-control" id="cancelReasonSelect" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color, #E2E8F0);">
+                                        <option value="">-- Select Reason --</option>
+                                        <option value="Switching to personal two-wheeler / bike">Switching to personal two-wheeler / bike</option>
+                                        <option value="Relocated residence closer to college campus">Relocated residence closer to college campus</option>
+                                        <option value="Using public transit (APSRTC / Train)">Using public transit (APSRTC / Train)</option>
+                                        <option value="Hostel accommodation arranged">Hostel accommodation arranged</option>
+                                        <option value="Other personal transportation arrangements">Other personal transportation arrangements</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 18px;">
+                                    <label for="cancelReasonText" style="font-weight: 700; margin-bottom: 6px; display: block;">Detailed Explanation *</label>
+                                    <textarea class="form-control" id="cancelReasonText" rows="3" required minlength="5" maxlength="255" placeholder="Explain your reason for switching to own transportation..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color, #E2E8F0);"></textarea>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 22px;">
+                                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="cancelConfirmCheck" required style="margin-top: 4px;">
+                                        <span style="font-size: 13px; color: var(--text-secondary);">
+                                            I confirm that I wish to cancel my college transportation and switch to my own arrangements. I understand this request is subject to Administration review.
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-danger" id="btnSubmitCancel" style="padding: 11px 24px; font-weight: 700; background: #DC2626; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                    Submit Cancellation Request
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Past Cancellation History Table Card -->
+                    <div class="card" style="margin-top: 24px;">
+                        <div class="card-head">
+                            <h3><span>📜</span> Cancellation Request History</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <div class="table-responsive">
+                                <table class="data-table" style="width:100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background:#f8fafc; text-align: left;">
+                                            <th style="padding: 12px 16px;">Request ID</th>
+                                            <th style="padding: 12px 16px;">Date</th>
+                                            <th style="padding: 12px 16px;">Reason</th>
+                                            <th style="padding: 12px 16px;">Status</th>
+                                            <th style="padding: 12px 16px;">Cancellation Fine</th>
+                                            <th style="padding: 12px 16px;">Admin Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cancelHistoryTableBody">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                                Loading cancellation history...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- =========================================================
+     MODAL 1: EDIT PROFILE (STRICTLY NAME & MOBILE ONLY)
+========================================================== -->
+    <dialog id="editProfileModal">
+        <div class="dialog-head">
+            <h2>✏️ Edit Profile Details</h2>
+            <button type="button" class="dialog-close" id="btnCloseEditModal" aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="editProfileForm">
+            <div class="dialog-body">
+                <div class="global-alert info" style="margin-bottom:16px;">
+                    <span>🔒</span>
+                    <span>You can edit your <strong>Name</strong>, <strong>Mobile Number</strong>, <strong>Selected Route</strong> and <strong>Boarding Stop</strong>. Other fields are locked.</span>
+                </div>
+
+                <!-- Full Name (Editable) -->
+                <div class="form-group">
+                    <label for="inputEditName">Full Name *</label>
+                    <input type="text" class="form-control" id="inputEditName" required minlength="2" maxlength="100"
+                        placeholder="e.g. Reddy">
+                </div>
+
+                <!-- Mobile Number (Editable - 10 digits) -->
+                <div class="form-group">
+                    <label for="inputEditPhone">Mobile Number (10 Digits) *</label>
+                    <input type="tel" class="form-control" id="inputEditPhone" required pattern="[0-9]{10}"
+                        maxlength="10" placeholder="e.g. 9863686258">
+                    <small style="font-size:11px; color:var(--text-muted);">Must be exactly 10 numeric digits</small>
+                </div>
+
+                <!-- Read-only Fields (Locked) -->
+                <div class="form-group">
+                    <label>Roll Number (Institutional ID)</label>
+                    <input type="text" class="form-control" id="inputLockedRoll" readonly disabled>
+                </div>
+
+                <div class="form-group">
+                    <label>Branch / Department</label>
+                    <input type="text" class="form-control" id="inputLockedBranch" readonly disabled>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" id="inputLockedEmail" readonly disabled>
+                </div>
+
+                <!-- Route & Stop (Editable dropdowns) -->
+                <div style="border-top:1px solid var(--border-color); margin-top:16px; padding-top:16px;">
+                    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+                        🚌 <strong>Transport Selection</strong> — Change your route and boarding stop.
+                        If you have an active or paid pass, the old payment history is preserved; the new route fee will apply going forward.
+                    </p>
+                    <div class="form-group">
+                        <label for="inputEditRoute">Selected Route *</label>
+                        <select class="form-control" id="inputEditRoute">
+                            <option value="">-- Loading routes... --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEditStop">Boarding Stop *</label>
+                        <select class="form-control" id="inputEditStop">
+                            <option value="">-- Choose route first --</option>
+                        </select>
+                        <small id="editStopFeeHint" style="font-size:11px; color:var(--text-muted);"></small>
+                    </div>
+                    <!-- Info message shown after a successful route/stop save -->
+                    <div id="editRouteFeeMsg" style="display:none; margin-top:8px;" class="global-alert info">
+                        <span>ℹ️</span>
+                        <span id="editRouteFeeMsgText"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialog-foot">
+                <button type="button" class="btn btn-secondary" id="btnCancelEdit">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitEdit">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =========================================================
+     MODAL 2: PAY TRANSPORTATION FEE
+========================================================== -->
+    <dialog id="payFeeModal">
+        <div class="dialog-head">
+            <h2>💳 Settle Transportation Fee</h2>
+            <button type="button" class="dialog-close" id="btnClosePayModal" aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="payFeeForm">
+            <div class="dialog-body">
+                <div
+                    style="background:var(--light-blue); border:1.5px solid var(--border-glow); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px; text-align:center;">
+                    <span
+                        style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Outstanding
+                        Amount Due</span>
+                    <div style="font-size:32px; font-weight:900; color:var(--royal-blue); margin-top:4px;"
+                        id="modalPayAmountText">₹0</div>
+                    <span style="font-size:12px; color:var(--text-secondary);" id="modalPayRouteText">Route: --- &bull;
+                        Stop: ---</span>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="form-group">
+                    <label for="selectPaymentMethod">Payment Gateway / Method *</label>
+                    <select class="form-control" id="selectPaymentMethod" required>
+                        <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+                        <option value="Net Banking">Net Banking (SBI / HDFC / ICICI)</option>
+                        <option value="Debit Card">Debit / ATM Card</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="College Gateway">VEMU IT Campus Portal Gateway</option>
+                    </select>
+                </div>
+
+                <!-- Reference / UPI ID -->
+                <div class="form-group" id="groupPaymentRef">
+                    <label for="inputPaymentRef">UPI ID / VPA *</label>
+                    <input type="text" class="form-control" id="inputPaymentRef"
+                        placeholder="e.g. yourname@oksbi or student@upi" required>
+                    <span id="paymentUpiError" style="display: none; color: #dc2626; font-size: 12px; margin-top: 4px; font-weight: 600;"></span>
+                </div>
+
+                <!-- Security Assurance Note -->
+                <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:12px;">
+                    🔒 All transactions are atomic and recorded instantly in the MySQL CampusGo database. Receipts are
+                    generated automatically upon successful backend verification.
+                </div>
+            </div>
+
+            <div class="dialog-foot">
+                <button type="button" class="btn btn-secondary" id="btnCancelPay">Cancel</button>
+                <button type="submit" class="btn btn-success" id="btnConfirmPay">Confirm &amp; Pay Now</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =========================================================
+     MODAL: PAY CANCELLATION FINE
+========================================================== -->
+    <dialog id="payFineModal">
+        <div class="dialog-head">
+            <h2>💳 Pay Cancellation Fee</h2>
+            <button type="button" class="dialog-close" id="btnCloseFineModal" aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="payFineForm">
+            <input type="hidden" id="payFineCancellationId">
+            <div class="dialog-body">
+                <div style="background:var(--light-blue); border:1.5px solid var(--border-glow); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px; text-align:center;">
+                    <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Institutional Cancellation Fine</span>
+                    <div style="font-size:32px; font-weight:900; color:#DC2626; margin-top:4px;" id="modalFineAmountText">₹500</div>
+                    <span style="font-size:12px; color:var(--text-secondary);" id="modalFineReasonText">Cancellation Approved</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputFineUpiId">UPI ID / VPA *</label>
+                    <input type="text" class="form-control" id="inputFineUpiId" placeholder="e.g. yourname@oksbi or student@upi" required>
+                    <span id="fineUpiError" style="display: none; color: #dc2626; font-size: 12px; margin-top: 4px; font-weight: 600;"></span>
+                </div>
+
+                <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:12px;">
+                    🔒 Institutional cancellation fee settlement. A verified transaction ID will be generated, and your cancellation record updated to "Paid".
+                </div>
+            </div>
+
+            <div class="dialog-foot">
+                <button type="button" class="btn btn-secondary" id="btnCancelFinePay">Cancel</button>
+                <button type="submit" class="btn btn-danger" id="btnConfirmFinePay" style="background:#DC2626; color:white;">Pay Fine Now</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =========================================================
+     MODAL 3: SUBMIT BUS PASS REQUEST
+========================================================== -->
+    <dialog id="applyPassModal">
+        <div class="dialog-head">
+            <h2>📝 Apply for College Bus Transport</h2>
+            <button type="button" class="dialog-close" id="btnCloseApplyModal"
+                aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="applyPassForm">
+            <div class="dialog-body">
+                <!-- Payment Auto-Selection Notice -->
+                <div id="applyPaymentAutoNotice"
+                    style="display:none; background:#EAF2FF; border:1px solid #BFDBFE; color:#1E40AF; padding:9px 12px; border-radius:6px; font-size:12px; margin-bottom:14px; align-items:center; gap:8px;">
+                    <span style="font-size:15px;">💳</span>
+                    <div>
+                        <strong>Payment Record Detected:</strong> Route &amp; Stop auto-filled from your verified fee payment.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="selectApplyRoute">Select Transportation Route *</label>
+                    <select class="form-control" id="selectApplyRoute" required>
+                        <option value="">-- Choose Route --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="selectApplyStop">Select Boarding Stop *</label>
+                    <select class="form-control" id="selectApplyStop" required>
+                        <option value="">-- Choose Route First --</option>
+                    </select>
+                </div>
+
+                <!-- CHANGE 1: Passport Size Photo Upload -->
+                <div class="form-group">
+                    <label for="applyPassportPhoto">Passport size photo *</label>
+                    <input type="file" class="form-control" id="applyPassportPhoto" name="passport_photo"
+                           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
+                    <small class="field-help" id="passportPhotoHelp">
+                        Upload passport size photo (JPG, JPEG, PNG, WEBP, max 2 MB).
+                    </small>
+                    <div id="passportPhotoError" style="color:var(--danger, #ef4444); font-size:12px; margin-top:4px; display:none;"></div>
+                    <div id="passportPreviewContainer" style="margin-top:10px; display:none;">
+                        <img id="passportPhotoPreview" src="" alt="Passport Preview"
+                             style="width:85px; height:105px; object-fit:cover; border-radius:6px; border:2px solid var(--border-color); display:block;">
+                    </div>
+                </div>
+
+                <div
+                    style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:12px 14px; margin-top:14px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+                        <span>Estimated Annual Fee:</span>
+                        <strong id="applyEstimatedFee" style="color:var(--deep-navy);">--</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialog-foot">
+                <button type="button" class="btn btn-secondary" id="btnCancelApply">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitApply">Submit Request</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =========================================================
+     MODAL 4: OFFICIAL PAYMENT RECEIPT PREVIEW & PRINT
+========================================================== -->
+    <dialog id="receiptModalDialog"
+        style="max-width:820px; width:95%; border:none; border-radius:14px; padding:0; box-shadow:0 25px 60px rgba(16,27,63,0.35); background:#FFFFFF;">
+        <div class="dialog-head"
+            style="padding:16px 22px; background:linear-gradient(135deg, #101B3F 0%, #192957 100%); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center; border-radius:14px 14px 0 0;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:20px;">🧾</span>
+                <h2 style="font-size:16px; margin:0; color:#FFFFFF; font-weight:800; letter-spacing:0.3px;">Official
+                    Transportation Fee Receipt</h2>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" class="btn btn-primary btn-sm" id="btnModalPrintReceipt"
+                    style="background:#2563EB; border:none; padding:7px 14px; border-radius:6px; font-weight:700; color:#FFFFFF; cursor:pointer;">
+                    🖨️ Print Receipt
+                </button>
+                <button type="button" class="dialog-close" id="btnCloseReceiptModal" aria-label="Close dialog"
+                    style="color:#FFFFFF; background:none; border:none; font-size:24px; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+        </div>
+        <div class="dialog-body" id="receiptModalBody"
+            style="padding:22px; max-height:80vh; overflow-y:auto; background:#F8FAFC;">
+            <!-- Dynamically rendered receipt HTML -->
+        </div>
+    </dialog>
+
+    <!-- Dedicated DOM Container for manual print fallback -->
+    <div id="printOnlyContainer"></div>
+
+    <!-- Hidden Iframe for Zero-Blank-Page Printing -->
+    <iframe id="hiddenPrintIframe"
+        style="position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;"></iframe>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">ℹ️</span>
+        <span id="toastMessage">Notification message</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../js/student-dashboard.js"></script>
+
+</body>
+
+</html>

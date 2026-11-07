@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEMU IT | CampusGo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Header and Navigation -->
+
+    <header class="site-header" id="home">
+        <div class="brand">
+            <img src="assets/images/vemu-logo.jpg" alt="VEMU IT Logo">
+
+            <div class="brand-text">
+                <h1>VEMU IT</h1>
+                <h2>CampusGo</h2>
+                <p>College Bus Transportation Management System</p>
+            </div>
+        </div>
+
+        <nav>
+            <a class="active" href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="#routes">Routes</a>
+            <a href="#contact">Contact</a>
+            <div class="nav-notif-wrapper" id="navNotifWrapper">
+                <button type="button" class="nav-notif-btn" id="navNotifBtn" aria-label="Notifications"
+                    title="Official Notices & Announcements">
+                    <span class="nav-notif-icon"></span>
+                    <span>Notifications</span>
+                    <span class="nav-notif-badge" id="navNotifBadge" style="display: none;">0</span>
+                </button>
+                <div class="nav-notif-dropdown" id="navNotifDropdown" role="dialog" aria-label="Official Notifications">
+                    <div class="nav-notif-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>📢</span>
+                            <strong>Official Notices &amp; Alerts</strong>
+                        </div>
+                        <span class="nav-notif-count-pill" id="navNotifCountPill">0 updates</span>
+                    </div>
+                    <div class="nav-notif-list" id="navNotifList">
+                        <div class="nav-notif-empty">No announcements at this time</div>
+                    </div>
+                </div>
+            </div>
+            <a class="login-link" href="pages/login.html">Login</a>
+            <a class="register-link" href="pages/register.html">Register</a>
+        </nav>
+    </header>
+
+
+    <hr>
+
+    <!-- Main Welcome Section -->
+    <main>
+
+        <section id="welcome" class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="bus-symbol">▣</span>
+                    Safe <span>•</span> Smart <span>•</span> Connected
+                </div>
+
+                <h2>
+                    Welcome to <span>VEMU IT</span><br>
+                    CampusGo
+                </h2>
+
+                <div class="hero-line"></div>
+
+                <h3>Your College Transportation, Made Simple!</h3>
+
+                <p class="hero-description">
+                    CampusGo is designed to make college bus transportation
+                    easier for students, administrators, and drivers. Explore
+                    routes, check transportation fees, access digital bus passes,
+                    and track your college bus.
+                </p>
+
+                <div class="hero-highlights">
+                    <div class="highlight">
+                        <div class="highlight-icon blue-icon">▣</div>
+                        <div>
+                            <strong>Track Buses</strong>
+                            <small>Live Location</small>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <div class="highlight-icon teal-icon">⌖</div>
+                        <div>
+                            <strong>Explore Routes</strong>
+                            <small>Find Your Stop</small>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <div class="highlight-icon purple-icon">▤</div>
+                        <div>
+                            <strong>Digital Passes</strong>
+                            <small>Safe &amp; Easy</small>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <div class="highlight-icon gold-icon">◇</div>
+                        <div>
+                            <strong>Secure System</strong>
+                            <small>For Everyone</small>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="pages/register.html" class="get-started">
+                    Get Started <span>→</span>
+                </a>
+            </div>
+
+            <div class="hero-image-wrap">
+                <img src="assets/images/college-campus.jpg" alt="VEMU IT College Campus" class="hero-image">
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- About College -->
+        <section id="about">
+            <h2>About VEMU IT</h2>
+
+            <p>
+                VEMU Institute of Technology provides an educational
+                environment for students to develop their knowledge
+                and skills. CampusGo is designed to support convenient
+                and organized college transportation management.
+            </p>
+
+            <p>
+                Students can access transportation information through
+                one platform, while administrators and drivers can
+                manage their assigned responsibilities.
+            </p>
+        </section>
+
+        <hr>
+
+        <!-- College Facilities -->
+        <section id="facilities">
+            <h2>College Facilities</h2>
+
+            <ul>
+                <li>Academic classrooms</li>
+                <li>Laboratories</li>
+                <li>Library and learning resources</li>
+                <li>College transportation facilities</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- Website Statistics -->
+        <section id="statistics">
+            <h2>CampusGo at a Glance</h2>
+
+            <div>
+                <h3>Total Buses</h3>
+                <p id="total-buses">Loading...</p>
+            </div>
+
+            <div>
+                <h3>Total Routes</h3>
+                <p id="total-routes">Loading...</p>
+            </div>
+
+            <div>
+                <h3>Registered Students</h3>
+                <p id="total-students">Loading...</p>
+            </div>
+
+            <div>
+                <h3>Total Stops</h3>
+                <p id="total-stops">Loading...</p>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- CampusGo Features -->
+        <section id="features">
+            <h2>CampusGo Features</h2>
+
+            <article>
+                <h3>Bus Routes and Stops</h3>
+                <p>Explore available bus routes and transportation stops.</p>
+            </article>
+
+            <article>
+                <h3>Transportation Fees</h3>
+                <p>Check the applicable transportation fee for your stop.</p>
+            </article>
+
+            <article>
+                <h3>Online Payments</h3>
+                <p>Pay transportation fees through the available payment system.</p>
+            </article>
+
+            <article>
+                <h3>Digital Bus Pass</h3>
+                <p>Access your bus pass and payment receipt online.</p>
+            </article>
+
+            <article>
+                <h3>Live Bus Tracking</h3>
+                <p>View bus location updates when tracking is available.</p>
+            </article>
+
+            <article>
+                <h3>Easy Transportation Management</h3>
+                <p>Support students, administrators, and drivers through one platform.</p>
+            </article>
+        </section>
+
+        <hr>
+
+        <!-- Routes -->
+        <section id="routes">
+            <h2>College Bus Routes</h2>
+
+            <div id="routes-container" class="routes-container">
+                <div class="routes-loading">
+                    <p>Loading college bus routes from CampusGo...</p>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- How to Register -->
+        <section id="registration-guide">
+            <h2>How to Register</h2>
+
+            <ol>
+                <li>Open the CampusGo website.</li>
+                <li>Select Register from the navigation bar.</li>
+                <li>Enter the required student details.</li>
+                <li>Submit your registration information.</li>
+                <li>Log in after your account is registered and available for use.</li>
+            </ol>
+        </section>
+
+        <hr>
+
+        <!-- Website Speciality -->
+        <section id="speciality">
+            <h2>Why VEMUIT-CampusGo?</h2>
+
+            <ul>
+                <li>Easy access to transportation information.</li>
+                <li>Clear information about stop-wise bus fees.</li>
+                <li>Digital bus passes and payment receipts.</li>
+                <li>Bus location updates when available.</li>
+                <li>Organized student, admin, and driver services.</li>
+                <li>Centralized transportation records.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+
+    </main>
+
+    <hr>
+
+    <!-- Footer -->
+    <!-- =====================================================
+     CONTACT SECTION
+===================================================== -->
+
+    <section class="section" id="contact">
+
+
+        <div class="section-header">
+
+            <span class="section-tag">
+                CONTACT
+            </span>
+
+
+            <h2>
+                Get in Touch
+            </h2>
+
+
+            <p>
+                Have questions about VEMUIT-CampusGo?
+                Contact us for assistance.
+            </p>
+
+        </div>
+
+
+        <div class="contact-grid">
+
+
+            <!-- CONTACT INFORMATION -->
+
+            <div class="contact-card">
+
+                <h3>
+                    VEMUIT-CampusGo Support
+                </h3>
+
+
+                <div class="contact-details">
+
+                    <p>
+
+                        <strong>
+                            Email:
+                        </strong>
+
+                        tiranth@gmail.com.com
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Phone:
+                        </strong>
+
+                        +91 8976453629
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Working Hours:
+                        </strong>
+
+                        Monday - Friday
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Support:
+                        </strong>
+
+                        Available for students,
+                        administrators and drivers.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTACT FORM -->
+
+            <div class="contact-card">
+
+                <h3>
+                    Send Us a Message
+                </h3>
+
+
+                <form id="contact-form" novalidate>
+
+                    <div id="contact-status" class="contact-status" style="display: none;" role="alert"></div>
+
+                    <div class="form-group">
+
+                        <label for="contact-name">
+                            Name
+                        </label>
+
+                        <input type="text" id="contact-name" name="name" placeholder="Enter your name" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="contact-email">
+                            Email or Phone
+                        </label>
+
+                        <input type="text" id="contact-email" name="email"
+                            placeholder="Enter your email or phone number" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="contact-message">
+                            Message
+                        </label>
+
+                        <textarea rows="4" id="contact-message" name="message" placeholder="Enter your message"
+                            required></textarea>
+
+                    </div>
+
+
+                    <button type="submit" id="contact-submit-btn" class="btn btn-primary">
+
+                        Send Message
+
+                    </button>
+
+
+                </form>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+     FOOTER
+===================================================== -->
+
+    <footer class="main-footer">
+        <div class="footer-container">
+
+            <!-- FOOTER ABOUT -->
+            <div class="footer-col">
+                <div class="logo-brand">
+                    <div class="logo-icon">
+                        🚌
+                    </div>
+                    <div class="logo-text">
+                        <h3>
+                            VEMUIT-CampusGo
+                        </h3>
+                        <span>
+                            College Transportation System
+                        </span>
+                    </div>
+                </div>
+                <p class="footer-description">
+                    A centralized digital platform
+                    for college transportation management.
+                </p>
+            </div>
+            <!-- QUICK ACCESS -->
+
+            <div class="footer-col">
+                <h4>
+                    Quick Access
+                </h4>
+                <ul>
+
+
+                    <li>
+                        <a href="#features">
+                            Features
+                        </a>
+                    </li>
+
+
+                    <li>
+                        <a href="#contact">
+                            Contact
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+            <!-- NAVIGATION -->
+            <div class="footer-col">
+                <h4>
+                    Navigation
+                </h4>
+                <ul>
+
+                    <li>
+                        <a href="#registration-guide">
+                            How It Works
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#contact">
+                            Contact
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>
+                &copy; 2026 VEMUIT-CampusGo.
+                All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/home.js"></script>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+
+</body>
+
+</html>
